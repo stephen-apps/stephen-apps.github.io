@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steve's Pill Chart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  /* ─────────────────────────────────────────────
+     DESIGN TOKENS (from style-guide.html)
+  ───────────────────────────────────────────── */
+  :root {
+    --color-brand-100: #a5b4fc;
+    --color-brand-300: #818cf8;
+    --color-brand-500: #6366f1;
+    --color-brand-gradient: linear-gradient(135deg, #a5b4fc 0%, #818cf8 40%, #6366f1 100%);
+    --color-brand-gradient-simple: linear-gradient(135deg, #6366f1, #818cf8);
+    --color-bg:             #f0f2f5;
+    --color-surface:        #ffffff;
+    --color-text-primary:   #1a1a2e;
+    --color-text-body:      #1e293b;
+    --color-text-secondary: #64748b;
+    --color-text-muted:     #94a3b8;
+    --color-text-faint:     #cbd5e1;
+    --color-border:         #e2e8f0;
+    --color-border-light:   #f1f5f9;
+    --color-input-bg:       #f8fafc;
+    --color-header-from:    #1e293b;
+    --color-header-to:      #0f172a;
+    --color-danger:         #dc2626;
+    --color-danger-bg:      #fef2f2;
+    --color-danger-border:  #fca5a5;
+    --color-warning:        #d97706;
+    --color-warning-bg:     #fffbeb;
+    --color-info:           #3b82f6;
+    --color-info-bg:        #eff6ff;
+    --color-success:        #059669;
+    --color-success-bg:     #ecfdf5;
+    --color-success-border: #6ee7b7;
+    --color-action-from:    #f97316;
+    --color-action-to:      #ea580c;
+    --radius-sm:   6px;
+    --radius-md:   8px;
+    --radius-lg:   10px;
+    --radius-xl:   12px;
+    --radius-2xl:  16px;
+    --radius-pill: 20px;
+    --radius-full: 50%;
+    --shadow-card:        0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-task:        0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.04);
+    --shadow-focus:       0 0 0 3px rgba(99,102,241,0.12);
+    --shadow-brand:       0 2px 8px rgba(99,102,241,0.35);
+    --shadow-brand-hover: 0 4px 14px rgba(99,102,241,0.4);
+    --shadow-action:      0 2px 12px rgba(249,115,22,0.4);
+    --shadow-modal:       0 20px 60px rgba(0,0,0,0.15);
+    --font-family:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-size-xs:   11px;
+    --font-size-sm:   12px;
+    --font-size-md:   13px;
+    --font-size-base: 14px;
+    --font-size-lg:   15px;
+    --transition-fast: 0.12s;
+    --transition-base: 0.15s;
+    --max-width: 1140px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-family);
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    padding-bottom: 4rem;
+  }
+
+  /* ─── HERO HEADER ─── */
+  .hero {
+    background: linear-gradient(135deg, var(--color-header-from) 0%, var(--color-header-to) 100%);
+    padding: 2.5rem 1.5rem 4.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: rgba(99,102,241,0.15);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -80px; left: 30%;
+    width: 300px; height: 300px;
+    background: rgba(99,102,241,0.08);
+    border-radius: 50%;
+  }
+  .hero-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+  .eyebrow {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 6px;
+  }
+  .main-title {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    background: var(--color-brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .stat-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-pill);
+    padding: 4px 14px;
+    font-size: var(--font-size-sm);
+    color: rgba(255,255,255,0.55);
+    font-weight: 500;
+  }
+  .stat-pill span { color: #fff; font-weight: 700; }
+  .hero-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-top: 4px;
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn-primary {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    padding: 9px 20px;
+    background: var(--color-brand-gradient-simple);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    box-shadow: var(--shadow-brand);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), opacity var(--transition-base);
+    white-space: nowrap;
+  }
+  .btn-primary:hover  { opacity: 0.92; box-shadow: var(--shadow-brand-hover); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-action {
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--color-action-from), var(--color-action-to));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    box-shadow: var(--shadow-action);
+    transition: opacity var(--transition-base), transform 0.1s, box-shadow var(--transition-base);
+    white-space: nowrap;
+  }
+  .btn-action:hover  { opacity: 0.9; box-shadow: 0 4px 18px rgba(249,115,22,0.5); }
+  .btn-action:active { transform: scale(0.97); }
+
+  .btn-ghost {
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: background var(--transition-base), border-color var(--transition-base);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    white-space: nowrap;
+  }
+  .btn-ghost-neutral { color: #6b7280; border-color: #e5e7eb; }
+  .btn-ghost-neutral:hover { background: #f9fafb; border-color: #d1d5db; }
+  .btn-ghost-success { color: var(--color-success); border-color: #d1fae5; }
+  .btn-ghost-success:hover { background: var(--color-success-bg); border-color: var(--color-success-border); }
+  .btn-ghost-danger  { color: var(--color-danger); border-color: #fee2e2; }
+  .btn-ghost-danger:hover  { background: var(--color-danger-bg); border-color: var(--color-danger-border); }
+  .btn-ghost-info    { color: var(--color-info); border-color: #bfdbfe; }
+  .btn-ghost-info:hover { background: var(--color-info-bg); border-color: #93c5fd; }
+
+  .btn-save {
+    font-family: var(--font-family); font-size: var(--font-size-sm); font-weight: 500;
+    padding: 6px 16px; border-radius: var(--radius-md); border: none;
+    background: var(--color-brand-gradient-simple);
+    color: #fff; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(99,102,241,0.3);
+    transition: opacity var(--transition-base);
+  }
+  .btn-save:hover { opacity: 0.88; }
+
+  .btn-cancel {
+    font-family: var(--font-family); font-size: var(--font-size-sm); font-weight: 500;
+    padding: 6px 16px; border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border); background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer; transition: background var(--transition-fast);
+  }
+  .btn-cancel:hover { background: var(--color-input-bg); }
+
+  .btn-destructive {
+    font-family: var(--font-family); font-size: var(--font-size-md); font-weight: 500;
+    padding: 8px 18px; border-radius: var(--radius-md);
+    border: none; background: var(--color-danger); color: #fff;
+    cursor: pointer; transition: opacity var(--transition-fast);
+  }
+  .btn-destructive:hover { opacity: 0.88; }
+
+  .btn-icon {
+    background: none; border: none; cursor: pointer;
+    font-size: var(--font-size-base); color: var(--color-text-muted);
+    padding: 3px 6px; border-radius: var(--radius-sm);
+    transition: background var(--transition-fast), color var(--transition-fast);
+  }
+  .btn-icon:hover { background: var(--color-border-light); color: #475569; }
+  .btn-icon-danger:hover { background: var(--color-danger-bg) !important; color: var(--color-danger) !important; }
+
+  /* ─── FORM FIELDS ─── */
+  .field {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    padding: 9px 12px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    outline: none;
+    width: 100%;
+  }
+  .field:focus {
+    border-color: var(--color-brand-500);
+    box-shadow: var(--shadow-focus);
+    background: var(--color-surface);
+  }
+  textarea.field { resize: vertical; min-height: 64px; line-height: 1.5; }
+  select.field { appearance: auto; }
+  .field-label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 5px;
+    display: block;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+
+  /* ─── PAGE LAYOUT ─── */
+  .main {
+    max-width: var(--max-width);
+    margin: -2.5rem auto 0;
+    padding: 0 1rem;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ─── TABS CARD ─── */
+  .tabs-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .tabs-nav {
+    display: flex;
+    border-bottom: 1px solid var(--color-border-light);
+    padding: 0 1.5rem;
+  }
+  .tab-btn {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    margin-bottom: -1px;
+    transition: color var(--transition-base), border-color var(--transition-base);
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--color-brand-500); border-bottom-color: var(--color-brand-500); font-weight: 600; }
+  .tab-btn:hover:not(.active) { color: var(--color-text-secondary); }
+  .tab-panel { display: none; padding: 1.75rem; }
+  .tab-panel.active { display: block; }
+
+  /* ─── SECTION LABEL ─── */
+  .section-label {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  /* ─── WEEKLY CHART ─── */
+  .chart-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chart-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-text-body);
+  }
+  .chart-week { display: none; }
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+  }
+  thead th {
+    background: var(--color-input-bg);
+    color: var(--color-text-muted);
+    font-weight: 700;
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 5px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+  }
+  thead th.th-info {
+    text-align: left;
+    padding-left: 14px;
+    min-width: 160px;
+  }
+  thead th.th-reason {
+    text-align: left;
+    padding-left: 8px;
+    min-width: 110px;
+    max-width: 140px;
+  }
+  thead th.today-hdr {
+    background: rgba(99,102,241,0.09);
+    color: var(--color-brand-500);
+  }
+  tbody tr { border-bottom: 1px solid var(--color-border-light); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+  tbody td {
+    padding: 10px 5px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  tbody td.td-info {
+    text-align: left;
+    padding-left: 14px;
+    padding-right: 8px;
+  }
+  tbody td.td-reason {
+    text-align: left;
+    padding-left: 8px;
+    padding-right: 8px;
+    max-width: 140px;
+  }
+  tbody td.today-col { background: rgba(99,102,241,0.04); }
+  tbody tr:hover td.today-col { background: rgba(99,102,241,0.08); }
+
+  .med-name-cell {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    color: var(--color-text-body);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .med-dosage-cell {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+  .med-reason-cell {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    line-height: 1.45;
+  }
+  .colour-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+  .dose-dot {
+    display: inline-block;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    vertical-align: middle;
+    opacity: 0.85;
+  }
+  .dose-dash {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-text-faint);
+    vertical-align: middle;
+    opacity: 0.45;
+  }
+
+  /* ─── MEDICINES TAB ─── */
+  .med-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .med-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .med-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: 12px 16px;
+    box-shadow: var(--shadow-task);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+  }
+  .med-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+    transform: translateY(-1px);
+  }
+  .med-card-swatch {
+    width: 38px; height: 38px;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+  }
+  .med-card-info { flex: 1; min-width: 0; }
+  .med-card-name  { font-size: var(--font-size-base); font-weight: 600; color: var(--color-text-body); }
+  .med-card-sub   { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 2px; }
+  .med-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  /* ─── BADGES ─── */
+  .due-badge {
+    font-size: var(--font-size-xs);
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    flex-shrink: 0;
+  }
+  .badge-am     { background: #fef9c3; color: #a16207; }
+  .badge-pm     { background: #ede9fe; color: #7c3aed; }
+  .badge-ampm   { background: #dcfce7; color: #15803d; }
+  .badge-weekly { background: var(--color-info-bg); color: var(--color-info); }
+
+  /* ─── ADD/EDIT MODAL ─── */
+  .form-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,0.52);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .form-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 490px;
+    box-shadow: var(--shadow-modal);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .form-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text-body);
+    margin-bottom: 1.5rem;
+  }
+  .form-grid { display: flex; flex-direction: column; gap: 1rem; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; }
+
+  /* ─── COLOUR SWATCH PICKER ─── */
+  .colour-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+  .colour-swatch {
+    width: 28px; height: 28px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: 2.5px solid transparent;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+  }
+  .colour-swatch:hover { transform: scale(1.15); }
+  .colour-swatch.selected { border-color: var(--color-text-body); transform: scale(1.15); }
+
+  /* ─── DELETE CONFIRM ─── */
+  .confirm-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,0.52);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .confirm-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    padding: 1.75rem;
+    max-width: 340px; width: 100%;
+    box-shadow: var(--shadow-modal);
+  }
+  .confirm-modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-text-body); }
+  .confirm-modal p  { font-size: var(--font-size-md); color: var(--color-text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    padding: 3rem 0;
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 0.75rem; }
+  .empty-hint { margin-top: 6px; font-size: var(--font-size-sm); }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 2rem; right: 1.5rem;
+    background: var(--color-text-body);
+    color: #fff;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+    z-index: 999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── PRINT ─── */
+  .print-only { display: none; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .hero, .tabs-nav, .chart-toolbar .btn-ghost, .form-overlay, .confirm-overlay, .toast { display: none !important; }
+    .chart-week { display: none !important; }
+    .main { margin: 0; padding: 0.5rem; }
+    .tabs-card { box-shadow: none; border-radius: 0; }
+    #tab-chart { display: block !important; padding: 0; }
+    #tab-medicines { display: none !important; }
+    .table-scroll { overflow: visible; border: none; border-radius: 0; }
+    table { min-width: auto; font-size: 9.5px; }
+    thead th { font-size: 8px; padding: 5px 3px; }
+    tbody td { padding: 6px 3px; }
+    .print-only {
+      display: block !important;
+      padding: 0.75rem 0.5rem 1rem;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 0.75rem;
+    }
+    .print-only h1 { font-size: 20px; font-weight: 800; color: #1a1a2e; }
+    .print-only p  { font-size: 11px; color: #64748b; margin-top: 2px; }
+    /* Force dots to print as solid black circles */
+    .dose-dot {
+      background: #000 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    /* Summary table styles */
+    .print-summary {
+      margin-top: 1.5rem;
+      page-break-inside: avoid;
+    }
+    .print-summary h2 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+    .print-summary table {
+      width: auto;
+      min-width: 0;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+    .print-summary th {
+      background: #f1f5f9;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      padding: 5px 14px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid #e2e8f0;
+    }
+    .print-summary td {
+      padding: 5px 14px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    .print-summary td:first-child { text-align: left; font-weight: 500; }
+    .print-summary tr.summary-total td {
+      font-weight: 700;
+      border-top: 2px solid #cbd5e1;
+      background: #f8fafc;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero Header -->
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <p class="eyebrow">Steve's</p>
+      <div class="main-title">Pill Chart</div>
+      <div class="stat-pills" id="statPills"></div>
+    </div>
+    <div class="hero-actions">
+      <input type="file" id="importInput" accept=".json" style="display:none" onchange="handleImport(event)">
+      <button class="btn-ghost btn-ghost-neutral" onclick="document.getElementById('importInput').click()">⬆ Import</button>
+      <button class="btn-ghost btn-ghost-success" onclick="exportMedicines()">⬇ Export</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="main">
+  <div class="tabs-card">
+
+    <!-- Tab navigation -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('chart', this)">📋 Weekly Chart</button>
+      <button class="tab-btn"        onclick="switchTab('medicines', this)">💊 Medicines</button>
+    </nav>
+
+    <!-- ── Weekly Chart Tab ── -->
+    <div class="tab-panel active" id="tab-chart">
+
+      <!-- Print-only header (invisible on screen) -->
+      <div class="print-only">
+        <h1>Steve's Pill Chart</h1>
+        <p id="printProducedLabel"></p>
+      </div>
+
+      <div class="chart-toolbar">
+        <div>
+          <div class="chart-title">Weekly Medication Schedule</div>
+          <div class="chart-week" id="weekLabel"></div>
+        </div>
+        <button class="btn-ghost btn-ghost-neutral" onclick="window.print()">🖨 Print / Email</button>
+      </div>
+
+      <div class="table-scroll" id="tableWrap">
+        <table id="chartTable">
+          <thead id="chartHead"></thead>
+          <tbody id="chartBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Print-only summary table -->
+      <div class="print-only print-summary" id="printSummary"></div>
+
+      <div id="chartEmpty" class="empty-state" style="display:none">
+        <div class="empty-icon">💊</div>
+        <div>No medicines added yet.</div>
+        <div class="empty-hint">Switch to the <strong>Medicines</strong> tab to get started.</div>
+      </div>
+
+    </div><!-- /tab-chart -->
+
+    <!-- ── Medicines Tab ── -->
+    <div class="tab-panel" id="tab-medicines">
+      <div class="med-toolbar">
+        <p class="section-label" style="margin:0;padding:0;border:none;">Medicines List</p>
+        <button class="btn-primary" onclick="openForm()">+ Add Medicine</button>
+      </div>
+
+      <div class="med-list" id="medList"></div>
+
+      <div id="medEmpty" class="empty-state" style="display:none">
+        <div class="empty-icon">💊</div>
+        <div>No medicines added yet.</div>
+        <div class="empty-hint">Click <strong>+ Add Medicine</strong> to begin.</div>
+      </div>
+
+    </div><!-- /tab-medicines -->
+
+  </div><!-- /tabs-card -->
+</div><!-- /main -->
+
+<!-- ── Add / Edit Medicine Modal ── -->
+<div class="form-overlay" id="formOverlay" style="display:none" onclick="overlayClick(event)">
+  <div class="form-modal" onclick="event.stopPropagation()">
+    <div class="form-modal-title" id="formTitle">Add Medicine</div>
+    <div class="form-grid">
+
+      <div class="form-row-2">
+        <div class="field-group">
+          <label class="field-label" for="fName">Medicine / Tablet Name <span style="color:var(--color-danger)">*</span></label>
+          <input type="text" id="fName" class="field" placeholder="e.g. Metformin">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="fDosage">Dosage <span style="color:var(--color-danger)">*</span></label>
+          <input type="text" id="fDosage" class="field" placeholder="e.g. 500 mg">
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="field-group">
+          <label class="field-label" for="fWhen">When to Take <span style="color:var(--color-danger)">*</span></label>
+          <select id="fWhen" class="field" onchange="toggleDayField()">
+            <option value="">— Select —</option>
+            <option value="am">Morning (AM)</option>
+            <option value="pm">Evening (PM)</option>
+            <option value="ampm">Morning &amp; Evening (AM + PM)</option>
+            <option value="weekly">Once a Week</option>
+          </select>
+        </div>
+        <div id="dayFieldWrap" style="display:none; grid-column: 1 / -1;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="field-group">
+              <label class="field-label" for="fDay">Day of the Week <span style="color:var(--color-danger)">*</span></label>
+              <select id="fDay" class="field">
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="fDayTime">Time of Day <span style="color:var(--color-danger)">*</span></label>
+              <select id="fDayTime" class="field">
+                <option value="am">Morning (AM)</option>
+                <option value="pm">Evening (PM)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="fReason">Why You Take It</label>
+        <textarea id="fReason" class="field" placeholder="e.g. Type 2 diabetes management"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Colour Tag</label>
+        <div class="colour-picker" id="colourPicker"></div>
+      </div>
+
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeForm()">Cancel</button>
+      <button class="btn-save" onclick="saveMedicine()">Save Medicine</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Confirm Modal ── -->
+<div class="confirm-overlay" id="deleteOverlay" style="display:none">
+  <div class="confirm-modal">
+    <h3>Delete Medicine?</h3>
+    <p>Are you sure you want to remove <strong id="deleteTargetName"></strong>? This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDelete()">Cancel</button>
+      <button class="btn-destructive" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA & STORAGE
+═══════════════════════════════════════════ */
+const STORAGE_KEY = 'stevesPillChart_v1';
+
+const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAYS_FULL  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+const PALETTE = [
+  '#6366f1','#818cf8','#a5b4fc',
+  '#ec4899','#f43f5e','#f97316',
+  '#eab308','#22c55e','#14b8a6',
+  '#3b82f6','#8b5cf6','#d946ef',
+  '#94a3b8','#64748b','#1e293b',
+];
+
+let medicines = [];
+let editingId  = null;
+let deleteId   = null;
+let activeColour = PALETTE[0];
+
+function loadData() {
+  try { medicines = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { medicines = []; }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(medicines));
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+/* ═══════════════════════════════════════════
+   STAT PILLS
+═══════════════════════════════════════════ */
+function renderStats() {
+  const total  = medicines.length;
+  const weekly = medicines.filter(m => m.when === 'weekly').length;
+  const daily  = total - weekly;
+  const am     = medicines.filter(m => m.when === 'am' || m.when === 'ampm').length;
+  const pm     = medicines.filter(m => m.when === 'pm' || m.when === 'ampm').length;
+  const el = document.getElementById('statPills');
+  if (total === 0) { el.innerHTML = '<span class="stat-pill"><span>0</span> medicines</span>'; return; }
+  el.innerHTML =
+    `<span class="stat-pill"><span>${total}</span> medicine${total !== 1 ? 's' : ''}</span>` +
+    `<span class="stat-pill"><span>${daily}</span> daily · <span>${weekly}</span> weekly</span>` +
+    `<span class="stat-pill"><span>${am}</span> AM · <span>${pm}</span> PM</span>`;
+}
+
+/* ═══════════════════════════════════════════
+   WHEN BADGE
+═══════════════════════════════════════════ */
+function whenBadge(m) {
+  if (m.when === 'am')     return '<span class="due-badge badge-am">AM</span>';
+  if (m.when === 'pm')     return '<span class="due-badge badge-pm">PM</span>';
+  if (m.when === 'ampm')   return '<span class="due-badge badge-ampm">AM + PM</span>';
+  if (m.when === 'weekly') {
+    const timeLabel = (m.dayTime || 'am') === 'pm' ? 'PM' : 'AM';
+    return `<span class="due-badge badge-weekly">Weekly · ${DAYS_FULL[m.day ?? 0]} ${timeLabel}</span>`;
+  }
+  return '';
+}
+
+/* ═══════════════════════════════════════════
+   MEDICINES LIST
+═══════════════════════════════════════════ */
+function renderMedList() {
+  const list  = document.getElementById('medList');
+  const empty = document.getElementById('medEmpty');
+  if (medicines.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = medicines.map(m => `
+    <div class="med-card">
+      <div class="med-card-swatch" style="background:${m.colour || PALETTE[0]}"></div>
+      <div class="med-card-info">
+        <div class="med-card-name">${esc(m.name)}</div>
+        <div class="med-card-sub">${esc(m.dosage)}${m.reason ? ' · ' + esc(m.reason) : ''}</div>
+      </div>
+      ${whenBadge(m)}
+      <div class="med-card-actions">
+        <button class="btn-icon" onclick="openForm('${m.id}')" title="Edit">✏️</button>
+        <button class="btn-icon btn-icon-danger" onclick="openDelete('${m.id}')" title="Delete">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ═══════════════════════════════════════════
+   WEEKLY CHART
+═══════════════════════════════════════════ */
+function renderChart() {
+  const head    = document.getElementById('chartHead');
+  const body    = document.getElementById('chartBody');
+  const empty   = document.getElementById('chartEmpty');
+  const wrap    = document.getElementById('tableWrap');
+  const table   = document.getElementById('chartTable');
+
+  const now      = new Date();
+  const todayDay = now.getDay(); // 0 = Sunday
+
+  // Build week label (screen only)
+  const wStart = new Date(now); wStart.setDate(now.getDate() - todayDay);
+  const wEnd   = new Date(wStart); wEnd.setDate(wStart.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
+  const weekLabel = `Week of ${fmt(wStart)} – ${fmt(wEnd)}`;
+  document.getElementById('weekLabel').textContent = weekLabel;
+
+  // Print header: chart produced date
+  const producedLabel = `Chart produced: ${fmt(now)}`;
+  document.getElementById('printProducedLabel').textContent = producedLabel;
+
+  if (medicines.length === 0) {
+    wrap.style.display  = 'none';
+    empty.style.display = '';
+    return;
+  }
+  wrap.style.display  = '';
+  empty.style.display = 'none';
+
+  // ── Header row 1: day name spans ──
+  let h1 = '<tr>';
+  h1 += '<th class="th-info" rowspan="2">Medicine &amp; Dosage</th>';
+  h1 += '<th class="th-reason" rowspan="2">Reason</th>';
+  for (let d = 0; d < 7; d++) {
+    const tc = d === todayDay ? ' today-hdr' : '';
+    h1 += `<th colspan="2" class="${tc}">${DAYS_SHORT[d]}</th>`;
+  }
+  h1 += '</tr>';
+
+  // ── Header row 2: AM / PM per day ──
+  let h2 = '<tr>';
+  for (let d = 0; d < 7; d++) {
+    const tc = d === todayDay ? ' today-hdr' : '';
+    h2 += `<th class="${tc}">AM</th><th class="${tc}">PM</th>`;
+  }
+  h2 += '</tr>';
+
+  head.innerHTML = h1 + h2;
+
+  // ── Body rows ──
+  let rows = '';
+  medicines.forEach(m => {
+    const colour = m.colour || PALETTE[0];
+    rows += '<tr>';
+    rows += `<td class="td-info">
+               <div class="med-name-cell">
+                 <span class="colour-dot" style="background:${colour}"></span>
+                 ${esc(m.name)}
+               </div>
+               <div class="med-dosage-cell">${esc(m.dosage)}</div>
+             </td>`;
+    rows += `<td class="td-reason"><span class="med-reason-cell">${esc(m.reason || '')}</span></td>`;
+
+    for (let d = 0; d < 7; d++) {
+      const tc = d === todayDay ? ' today-col' : '';
+      let amCell, pmCell;
+
+      if (m.when === 'am') {
+        amCell = dot(colour);
+        pmCell = dash();
+      } else if (m.when === 'pm') {
+        amCell = dash();
+        pmCell = dot(colour);
+      } else if (m.when === 'ampm') {
+        amCell = dot(colour);
+        pmCell = dot(colour);
+      } else if (m.when === 'weekly') {
+        if (d === (m.day ?? 0)) {
+          const isPM = (m.dayTime || 'am') === 'pm';
+          amCell = isPM ? dash() : dot(colour);
+          pmCell = isPM ? dot(colour) : dash();
+        } else {
+          amCell = dash();
+          pmCell = dash();
+        }
+      } else {
+        amCell = dash();
+        pmCell = dash();
+      }
+      rows += `<td class="${tc}">${amCell}</td><td class="${tc}">${pmCell}</td>`;
+    }
+    rows += '</tr>';
+  });
+  body.innerHTML = rows;
+
+  // ── Print summary table ──
+  renderPrintSummary();
+}
+
+function renderPrintSummary() {
+  const el = document.getElementById('printSummary');
+  if (!el) return;
+  if (medicines.length === 0) { el.innerHTML = ''; return; }
+
+  // Build per-medicine rows
+  let amTotal = 0, pmTotal = 0, weeklyTotal = 0;
+  const medicineRows = medicines.map(m => {
+    let amDose = '', pmDose = '', weeklyDose = '';
+    if (m.when === 'am') {
+      amDose = '✔'; amTotal++;
+    } else if (m.when === 'pm') {
+      pmDose = '✔'; pmTotal++;
+    } else if (m.when === 'ampm') {
+      amDose = '✔'; pmDose = '✔'; amTotal++; pmTotal++;
+    } else if (m.when === 'weekly') {
+      const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][m.day ?? 0];
+      const timeLabel = (m.dayTime || 'am').toUpperCase();
+      weeklyDose = `${dayName} ${timeLabel}`; weeklyTotal++;
+    }
+    return `<tr>
+      <td>${esc(m.name)} <span style="font-weight:400;color:#64748b">${esc(m.dosage)}</span></td>
+      <td>${amDose}</td>
+      <td>${pmDose}</td>
+      <td>${weeklyDose}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <h2>Tablet Summary</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Medicine &amp; Dosage</th>
+          <th>AM (daily)</th>
+          <th>PM (daily)</th>
+          <th>Weekly</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${medicineRows}
+        <tr class="summary-total">
+          <td>Total</td>
+          <td>${amTotal} tablet${amTotal !== 1 ? 's' : ''}</td>
+          <td>${pmTotal} tablet${pmTotal !== 1 ? 's' : ''}</td>
+          <td>${weeklyTotal} tablet${weeklyTotal !== 1 ? 's' : ''}</td>
+        </tr>
+      </tbody>
+    </table>`;
+}
+
+function dot(colour) {
+  return `<span class="dose-dot" style="background:${colour}"></span>`;
+}
+function dash() {
+  return `<span class="dose-dash"></span>`;
+}
+
+/* ═══════════════════════════════════════════
+   ADD / EDIT FORM
+═══════════════════════════════════════════ */
+function openForm(id = null) {
+  editingId = id;
+  const m = id ? medicines.find(x => x.id === id) : null;
+
+  document.getElementById('formTitle').textContent = id ? 'Edit Medicine' : 'Add Medicine';
+  document.getElementById('fName').value   = m ? m.name   : '';
+  document.getElementById('fDosage').value = m ? m.dosage : '';
+  document.getElementById('fWhen').value   = m ? m.when   : '';
+  document.getElementById('fDay').value     = m && m.day !== undefined ? String(m.day) : '0';
+  document.getElementById('fDayTime').value = m && m.dayTime ? m.dayTime : 'am';
+  document.getElementById('fReason').value = m ? (m.reason || '') : '';
+  activeColour = m ? (m.colour || PALETTE[0]) : PALETTE[0];
+
+  toggleDayField();
+  renderColourPicker();
+  document.getElementById('formOverlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('fName').focus(), 60);
+}
+
+function closeForm() {
+  document.getElementById('formOverlay').style.display = 'none';
+  editingId = null;
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('formOverlay')) closeForm();
+}
+
+function toggleDayField() {
+  const weekly = document.getElementById('fWhen').value === 'weekly';
+  document.getElementById('dayFieldWrap').style.display = weekly ? '' : 'none';
+}
+
+function saveMedicine() {
+  const name   = document.getElementById('fName').value.trim();
+  const dosage = document.getElementById('fDosage').value.trim();
+  const when   = document.getElementById('fWhen').value;
+  const day     = parseInt(document.getElementById('fDay').value, 10);
+  const dayTime = document.getElementById('fDayTime').value;
+  const reason  = document.getElementById('fReason').value.trim();
+
+  if (!name)   { showToast('Please enter a medicine name.');   document.getElementById('fName').focus();   return; }
+  if (!dosage) { showToast('Please enter a dosage.');          document.getElementById('fDosage').focus(); return; }
+  if (!when)   { showToast('Please select when to take it.');  document.getElementById('fWhen').focus();   return; }
+
+  const entry = {
+    id: editingId || uid(),
+    name, dosage, when,
+    day:     when === 'weekly' ? day     : undefined,
+    dayTime: when === 'weekly' ? dayTime : undefined,
+    reason,
+    colour: activeColour,
+  };
+
+  if (editingId) {
+    const idx = medicines.findIndex(m => m.id === editingId);
+    if (idx >= 0) medicines[idx] = entry;
+  } else {
+    medicines.push(entry);
+  }
+
+  saveData();
+  closeForm();
+  renderAll();
+  showToast(editingId ? 'Medicine updated.' : 'Medicine added.');
+}
+
+/* ═══════════════════════════════════════════
+   DELETE
+═══════════════════════════════════════════ */
+function openDelete(id) {
+  deleteId = id;
+  const m = medicines.find(x => x.id === id);
+  document.getElementById('deleteTargetName').textContent = m ? m.name : 'this medicine';
+  document.getElementById('deleteOverlay').style.display = 'flex';
+}
+
+function closeDelete() {
+  document.getElementById('deleteOverlay').style.display = 'none';
+  deleteId = null;
+}
+
+function confirmDelete() {
+  medicines = medicines.filter(m => m.id !== deleteId);
+  saveData();
+  closeDelete();
+  renderAll();
+  showToast('Medicine deleted.');
+}
+
+/* ═══════════════════════════════════════════
+   COLOUR PICKER
+═══════════════════════════════════════════ */
+function renderColourPicker() {
+  document.getElementById('colourPicker').innerHTML = PALETTE.map(c =>
+    `<div class="colour-swatch ${c === activeColour ? 'selected' : ''}"
+          style="background:${c}"
+          onclick="pickColour('${c}')"></div>`
+  ).join('');
+}
+
+function pickColour(c) {
+  activeColour = c;
+  renderColourPicker();
+}
+
+/* ═══════════════════════════════════════════
+   IMPORT / EXPORT
+═══════════════════════════════════════════ */
+function normaliseMedicine(m) {
+  const out = { ...m };
+
+  // Map foreign-app "timing" field → our "when" field
+  // Handles: "AM", "PM", "AM+PM", "AMPM", "morning", "evening", "both", etc.
+  if (!out.when && out.timing) {
+    const t = String(out.timing).trim().toUpperCase().replace(/\s/g, '');
+    if      (t === 'AM+PM' || t === 'AMPM' || t === 'BOTH') out.when = 'ampm';
+    else if (t === 'PM'    || t === 'EVENING')               out.when = 'pm';
+    else if (t === 'AM'    || t === 'MORNING')               out.when = 'am';
+    delete out.timing;
+  }
+
+  // Ensure every entry has a unique id
+  if (!out.id) out.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+  return out;
+}
+
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      let list;
+      // 1. Our own envelope format  { app, medicines: [...] }
+      // 2. Other app envelope format { medicines: [...], exportedAt, _note, ... }
+      // 3. Legacy plain-array format [...]
+      if (Array.isArray(parsed)) {
+        list = parsed;
+      } else if (parsed && Array.isArray(parsed.medicines)) {
+        list = parsed.medicines;
+      } else {
+        showToast('Invalid file — not a recognised medicines.json.');
+        return;
+      }
+      medicines = list.map(normaliseMedicine);
+      saveData();
+      renderAll();
+      showToast(`Imported ${medicines.length} medicine${medicines.length !== 1 ? 's' : ''}.`);
+    } catch {
+      showToast('Could not read file. Make sure it is a valid medicines.json.');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function exportMedicines() {
+  const envelope = {
+    app:      "Steve's Pill Chart",
+    version:  1,
+    exported: new Date().toISOString(),
+    count:    medicines.length,
+    medicines,
+  };
+  const json = JSON.stringify(envelope, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'medicines.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Exported as medicines.json');
+}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+/* ═══════════════════════════════════════════
+   HTML ESCAPING
+═══════════════════════════════════════════ */
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ═══════════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════════ */
+function renderAll() {
+  renderStats();
+  renderMedList();
+  renderChart();
+}
+
+/* ═══════════════════════════════════════════
+   KEYBOARD: Escape closes modals
+═══════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeForm();
+    closeDelete();
+  }
+});
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+loadData();
+renderAll();
+</script>
+</body>
+</html>

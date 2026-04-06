@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IEEE 754 Floating Point Converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  /* ─── DESIGN TOKENS ─── */
+  :root {
+    --color-brand-100: #a5b4fc;
+    --color-brand-300: #818cf8;
+    --color-brand-500: #6366f1;
+    --color-brand-gradient: linear-gradient(135deg, #a5b4fc 0%, #818cf8 40%, #6366f1 100%);
+    --color-brand-gradient-simple: linear-gradient(135deg, #6366f1, #818cf8);
+
+    --color-bg:               #f0f2f5;
+    --color-surface:          #ffffff;
+    --color-text-primary:     #1a1a2e;
+    --color-text-body:        #1e293b;
+    --color-text-secondary:   #64748b;
+    --color-text-muted:       #94a3b8;
+    --color-text-faint:       #cbd5e1;
+    --color-border:           #e2e8f0;
+    --color-border-light:     #f1f5f9;
+    --color-input-bg:         #f8fafc;
+
+    --color-header-from: #1e293b;
+    --color-header-to:   #0f172a;
+
+    --color-danger:        #dc2626;
+    --color-danger-bg:     #fef2f2;
+    --color-danger-border: #fca5a5;
+    --color-warning:       #d97706;
+    --color-warning-bg:    #fffbeb;
+    --color-info:          #3b82f6;
+    --color-info-bg:       #eff6ff;
+    --color-success:       #059669;
+    --color-success-bg:    #ecfdf5;
+    --color-success-border:#6ee7b7;
+    --color-action-from:   #f97316;
+    --color-action-to:     #ea580c;
+
+    --radius-sm:  6px;
+    --radius-md:  8px;
+    --radius-lg:  10px;
+    --radius-xl:  12px;
+    --radius-2xl: 16px;
+    --radius-pill: 20px;
+
+    --shadow-card:        0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-task:        0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.04);
+    --shadow-focus:       0 0 0 3px rgba(99,102,241,0.12);
+    --shadow-brand:       0 2px 8px rgba(99,102,241,0.35);
+    --shadow-brand-hover: 0 4px 14px rgba(99,102,241,0.4);
+    --shadow-modal:       0 20px 60px rgba(0,0,0,0.15);
+
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-size-xs:   11px;
+    --font-size-sm:   12px;
+    --font-size-md:   13px;
+    --font-size-base: 14px;
+    --font-size-lg:   15px;
+
+    --transition-fast: 0.12s;
+    --transition-base: 0.15s;
+    --max-width: 740px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-family);
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    padding-bottom: 4rem;
+  }
+
+  /* ─── HERO HEADER ─── */
+  .hero {
+    background: linear-gradient(135deg, var(--color-header-from) 0%, var(--color-header-to) 100%);
+    padding: 3rem 1.5rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: rgba(99,102,241,0.15);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -80px; left: 30%;
+    width: 300px; height: 300px;
+    background: rgba(99,102,241,0.08);
+    border-radius: 50%;
+  }
+  .hero-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-eyebrow {
+    font-size: clamp(16px, 2.5vw, 24px);
+    font-weight: 600;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  .hero-title {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    background: var(--color-brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .hero-subtitle {
+    margin-top: 10px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 400;
+  }
+  .hero-pills {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 18px;
+  }
+  .hero-pill {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-pill);
+    padding: 4px 14px;
+    font-size: var(--font-size-sm);
+    color: rgba(255,255,255,0.6);
+    font-weight: 500;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  .main {
+    max-width: var(--max-width);
+    margin: -2rem auto 0;
+    padding: 0 1rem;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+  .card-body { padding: 1.5rem; }
+
+  /* ─── TABS ─── */
+  .tabs-nav {
+    display: flex;
+    border-bottom: 1px solid var(--color-border-light);
+    padding: 0 1.5rem;
+    background: var(--color-surface);
+  }
+  .tab-btn {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    padding: 1rem 1.25rem;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    margin-bottom: -1px;
+    transition: color var(--transition-base), border-color var(--transition-base);
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--color-brand-500); border-bottom-color: var(--color-brand-500); font-weight: 600; }
+  .tab-btn:hover:not(.active) { color: var(--color-text-secondary); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ─── SECTION LABEL ─── */
+  .section-label {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  /* ─── FORM FIELDS ─── */
+  .field {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    padding: 9px 12px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    outline: none;
+    width: 100%;
+  }
+  .field:focus {
+    border-color: var(--color-brand-500);
+    box-shadow: var(--shadow-focus);
+    background: var(--color-surface);
+  }
+  .field-label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 5px;
+    display: block;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+
+  /* ─── BUTTONS ─── */
+  .btn-primary {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    padding: 9px 20px;
+    background: var(--color-brand-gradient-simple);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    box-shadow: var(--shadow-brand);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), opacity var(--transition-base);
+    white-space: nowrap;
+  }
+  .btn-primary:hover  { opacity: 0.92; box-shadow: var(--shadow-brand-hover); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-ghost {
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid #e5e7eb;
+    cursor: pointer;
+    transition: background var(--transition-base), border-color var(--transition-base);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    color: #6b7280;
+    white-space: nowrap;
+  }
+  .btn-ghost:hover { background: #f9fafb; border-color: #d1d5db; }
+
+  /* ─── INPUT TOGGLE ─── */
+  .input-mode-toggle {
+    display: flex; gap: 6px; margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .mode-btn {
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+  .mode-btn.active {
+    background: var(--color-brand-gradient-simple);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: var(--shadow-brand);
+  }
+  .mode-btn:hover:not(.active) { border-color: var(--color-brand-300); color: var(--color-brand-500); }
+
+  /* ─── BIT DISPLAY ─── */
+  .bit-display-wrap {
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1rem 1.25rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .bit-display-title {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+  .bit-legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .legend-sign  { background: #f43f5e; }
+  .legend-exp   { background: #f97316; }
+  .legend-mant  { background: #10b981; }
+
+  .bits-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  .bit-group {
+    display: flex;
+    gap: 2px;
+  }
+  .bit {
+    width: 22px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: default;
+    transition: transform var(--transition-fast);
+    user-select: none;
+  }
+  .bit:hover { transform: scale(1.15); z-index: 1; }
+  .bit-sign { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+  .bit-exp  { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+  .bit-mant { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+  .bit-sep  { width: 6px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--color-text-faint); font-size: 16px; }
+
+  /* ─── RESULTS GRID ─── */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 520px) { .results-grid { grid-template-columns: 1fr; } }
+
+  .result-item {
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 12px 14px;
+  }
+  .result-label {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: 5px;
+  }
+  .result-value {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    color: var(--color-text-body);
+    word-break: break-all;
+    line-height: 1.5;
+  }
+  .result-item.full-width { grid-column: 1 / -1; }
+  .result-item.highlight {
+    border-color: #c7d2fe;
+    background: #eef2ff;
+  }
+  .result-item.highlight .result-value { color: var(--color-brand-500); }
+
+  /* ─── BREAKDOWN TABLE ─── */
+  .breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+  }
+  .breakdown-table th {
+    background: var(--color-input-bg);
+    color: var(--color-text-muted);
+    font-weight: 700;
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .breakdown-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-text-body);
+    vertical-align: top;
+  }
+  .breakdown-table tr:last-child td { border-bottom: none; }
+  .breakdown-table tr:hover td { background: #fafbfc; }
+  .td-label { font-weight: 600; color: var(--color-text-secondary); white-space: nowrap; }
+  .td-bits  { font-family: 'Courier New', monospace; letter-spacing: 0.05em; }
+  .td-value { color: var(--color-brand-500); font-weight: 600; font-family: 'Courier New', monospace; }
+  .td-note  { color: var(--color-text-muted); font-size: var(--font-size-xs); margin-top: 2px; }
+
+  .tag-sign { color: #be123c; font-weight: 700; }
+  .tag-exp  { color: #c2410c; font-weight: 700; }
+  .tag-mant { color: #065f46; font-weight: 700; }
+
+  /* ─── SPECIAL CASE BADGE ─── */
+  .special-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  .special-badge.nan     { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+  .special-badge.inf     { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+  .special-badge.zero    { background: var(--color-info-bg); color: var(--color-info); border: 1px solid #bfdbfe; }
+  .special-badge.denorm  { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+  .special-badge.normal  { background: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success-border); }
+
+  /* ─── FORMULA ─── */
+  .formula-box {
+    background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+    border: 1px solid #c7d2fe;
+    border-radius: var(--radius-xl);
+    padding: 12px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: var(--font-size-md);
+    color: var(--color-text-body);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    word-break: break-word;
+  }
+  .formula-box span { color: var(--color-brand-500); font-weight: 700; }
+
+  /* ─── HEX COPY ─── */
+  .copy-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .copy-btn {
+    font-family: var(--font-family);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { border-color: var(--color-brand-300); color: var(--color-brand-500); }
+  .copy-btn.copied { background: var(--color-success-bg); border-color: var(--color-success-border); color: var(--color-success); }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    color: var(--color-text-muted);
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-text { font-size: var(--font-size-md); }
+
+  /* ─── ERROR STATE ─── */
+  .error-state {
+    background: var(--color-danger-bg);
+    border: 1px solid var(--color-danger-border);
+    border-radius: var(--radius-xl);
+    padding: 12px 16px;
+    color: var(--color-danger);
+    font-size: var(--font-size-md);
+    font-weight: 500;
+  }
+
+  /* ─── TOOLTIP ─── */
+  .tooltip-wrap { position: relative; display: inline-block; }
+  .tooltip-wrap .tooltip-tip {
+    visibility: hidden; opacity: 0;
+    position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+    background: var(--color-text-body); color: #fff;
+    font-size: 11px; font-weight: 500;
+    padding: 5px 10px; border-radius: var(--radius-md);
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity var(--transition-fast);
+    z-index: 10;
+  }
+  .tooltip-wrap:hover .tooltip-tip { visibility: visible; opacity: 1; }
+
+  /* ─── QUICK EXAMPLES ─── */
+  .examples-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 8px;
+  }
+  .example-chip {
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    padding: 4px 11px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  .example-chip:hover { border-color: var(--color-brand-300); color: var(--color-brand-500); background: #eef2ff; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 1.5rem;
+    background: var(--color-text-body); color: #fff;
+    font-size: var(--font-size-sm); font-weight: 500;
+    padding: 10px 18px; border-radius: var(--radius-pill);
+    z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    .field-row { grid-template-columns: 1fr; }
+    .bit { width: 18px; height: 24px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Allan's</p>
+    <h1 class="hero-title">IEEE 754 Converter</h1>
+    <p class="hero-subtitle">Floating point representation · Single &amp; Double precision</p>
+    <div class="hero-pills">
+      <span class="hero-pill">32-bit Single</span>
+      <span class="hero-pill">64-bit Double</span>
+      <span class="hero-pill">Decimal · Binary · Hex</span>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- CONVERTER CARD -->
+  <div class="card">
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchPrecision('single', this)">Single Precision (32-bit)</button>
+      <button class="tab-btn"        onclick="switchPrecision('double', this)">Double Precision (64-bit)</button>
+    </div>
+
+    <!-- SINGLE TAB -->
+    <div class="tab-panel active" id="panel-single">
+      <div class="card-body">
+        <p class="section-label">Input</p>
+
+        <!-- Mode toggle -->
+        <div class="input-mode-toggle">
+          <button class="mode-btn active" onclick="setMode('single','decimal',this)">Decimal</button>
+          <button class="mode-btn"        onclick="setMode('single','binary', this)">Binary (32 bits)</button>
+          <button class="mode-btn"        onclick="setMode('single','hex',    this)">Hex (8 digits)</button>
+        </div>
+
+        <!-- Input field -->
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" id="lbl-single">Decimal value</label>
+            <input class="field" id="inp-single" type="text" placeholder="e.g. 3.14159" oninput="convert('single')" autocomplete="off" spellcheck="false">
+          </div>
+          <button class="btn-primary" onclick="convert('single')">Convert</button>
+        </div>
+
+        <div class="examples-row" id="examples-single"></div>
+      </div>
+    </div>
+
+    <!-- DOUBLE TAB -->
+    <div class="tab-panel" id="panel-double">
+      <div class="card-body">
+        <p class="section-label">Input</p>
+
+        <div class="input-mode-toggle">
+          <button class="mode-btn active" onclick="setMode('double','decimal',this)">Decimal</button>
+          <button class="mode-btn"        onclick="setMode('double','binary', this)">Binary (64 bits)</button>
+          <button class="mode-btn"        onclick="setMode('double','hex',    this)">Hex (16 digits)</button>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" id="lbl-double">Decimal value</label>
+            <input class="field" id="inp-double" type="text" placeholder="e.g. 3.141592653589793" oninput="convert('double')" autocomplete="off" spellcheck="false">
+          </div>
+          <button class="btn-primary" onclick="convert('double')">Convert</button>
+        </div>
+
+        <div class="examples-row" id="examples-double"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS CARD -->
+  <div class="card" id="results-card" style="display:none;">
+    <div class="card-body">
+      <p class="section-label">Results</p>
+      <div id="results-content">
+        <div class="empty-state">
+          <div class="empty-icon">🔢</div>
+          <p class="empty-text">Enter a value above to see the IEEE 754 representation</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFERENCE CARD -->
+  <div class="card">
+    <div class="card-body">
+      <p class="section-label">Format Reference</p>
+      <div style="overflow-x:auto;">
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th>Format</th>
+              <th>Total Bits</th>
+              <th>Sign</th>
+              <th>Exponent</th>
+              <th>Mantissa</th>
+              <th>Bias</th>
+              <th>Approx. Range</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-label">Single (float32)</td>
+              <td>32</td>
+              <td class="tag-sign">1 bit</td>
+              <td class="tag-exp">8 bits</td>
+              <td class="tag-mant">23 bits</td>
+              <td>127</td>
+              <td style="font-size:11px;">±1.18×10⁻³⁸ to ±3.4×10³⁸</td>
+            </tr>
+            <tr>
+              <td class="td-label">Double (float64)</td>
+              <td>64</td>
+              <td class="tag-sign">1 bit</td>
+              <td class="tag-exp">11 bits</td>
+              <td class="tag-mant">52 bits</td>
+              <td>1023</td>
+              <td style="font-size:11px;">±2.23×10⁻³⁰⁸ to ±1.8×10³⁰⁸</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const state = {
+  single: { mode: 'decimal' },
+  double: { mode: 'decimal' }
+};
+
+// ─── EXAMPLES ────────────────────────────────────────────────────────────────
+const EXAMPLES = {
+  single: ['3.14', '1.0', '-1.0', '0.1', '0', 'Infinity', '-Infinity', 'NaN', '1.175494e-38', '3.4028235e+38'],
+  double: ['3.141592653589793', '1.0', '-0.0', '0.1', '2.2e-308', '1.7976931e+308', 'Infinity', 'NaN']
+};
+
+function initExamples() {
+  ['single','double'].forEach(prec => {
+    const el = document.getElementById('examples-' + prec);
+    el.innerHTML = EXAMPLES[prec].map(v =>
+      `<button class="example-chip" onclick="loadExample('${prec}','${v}')">${v}</button>`
+    ).join('');
+  });
+}
+
+function loadExample(prec, val) {
+  document.getElementById('inp-' + prec).value = val;
+  setMode(prec, 'decimal', document.querySelector(`#panel-${prec} .mode-btn`));
+  convert(prec);
+}
+
+// ─── PRECISION SWITCHING ─────────────────────────────────────────────────────
+let currentPrec = 'single';
+
+function switchPrecision(prec, btn) {
+  currentPrec = prec;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + prec).classList.add('active');
+  const inp = document.getElementById('inp-' + prec);
+  if (inp.value.trim()) convert(prec);
+  else { document.getElementById('results-card').style.display = 'none'; }
+}
+
+// ─── MODE SWITCHING ───────────────────────────────────────────────────────────
+function setMode(prec, mode, btn) {
+  state[prec].mode = mode;
+  const panel = document.getElementById('panel-' + prec);
+  panel.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const lbl = document.getElementById('lbl-' + prec);
+  const inp = document.getElementById('inp-' + prec);
+  const bitLen = prec === 'single' ? 32 : 64;
+  const hexLen = prec === 'single' ? 8  : 16;
+
+  if (mode === 'decimal') {
+    lbl.textContent = 'Decimal value';
+    inp.placeholder = prec === 'single' ? 'e.g. 3.14159' : 'e.g. 3.14159265358979';
+    inp.maxLength = 50;
+  } else if (mode === 'binary') {
+    lbl.textContent = `Binary (${bitLen} bits)`;
+    inp.placeholder = '0'.repeat(bitLen);
+    inp.maxLength = bitLen;
+  } else {
+    lbl.textContent = `Hexadecimal (${hexLen} hex digits)`;
+    inp.placeholder = '0'.repeat(hexLen);
+    inp.maxLength = hexLen;
+  }
+  inp.value = '';
+  document.getElementById('results-card').style.display = 'none';
+}
+
+// ─── IEEE 754 CORE ─────────────────────────────────────────────────────────
+// Convert decimal string → Float32 bits
+function decimalToSingle(str) {
+  const f = parseFloat(str);
+  if (isNaN(f) && str.trim().toLowerCase() !== 'nan') return null;
+  const buf = new ArrayBuffer(4);
+  new Float32Array(buf)[0] = isNaN(f) ? NaN : f;
+  const ui = new Uint32Array(buf)[0];
+  return ui;
+}
+
+// Convert decimal string → Float64 bits (as two Uint32)
+function decimalToDouble(str) {
+  const f = parseFloat(str);
+  if (isNaN(f) && str.trim().toLowerCase() !== 'nan') return null;
+  const buf = new ArrayBuffer(8);
+  new Float64Array(buf)[0] = isNaN(f) ? NaN : f;
+  const ui = new Uint32Array(buf);
+  return ui; // [low, high] — little endian
+}
+
+function uint32ToBin(n) {
+  return n.toString(2).padStart(32, '0');
+}
+
+function uint32ToHex(n) {
+  return n.toString(16).padStart(8, '0').toUpperCase();
+}
+
+function double64ToHex(loHi) {
+  return uint32ToHex(loHi[1]) + uint32ToHex(loHi[0]);
+}
+
+function double64ToBin(loHi) {
+  return uint32ToBin(loHi[1]) + uint32ToBin(loHi[0]);
+}
+
+// Analyse single precision
+function analyseSingle(bits32) {
+  const bin = uint32ToBin(bits32);
+  const sign = parseInt(bin[0], 2);
+  const expBits = bin.slice(1, 9);
+  const mantBits = bin.slice(9);
+  const expRaw = parseInt(expBits, 2);
+  const bias = 127;
+  const hex = uint32ToHex(bits32);
+
+  let type, value, formula, expVal, mantVal;
+
+  if (expRaw === 255) {
+    // Infinity or NaN
+    const allZeroMant = mantBits === '00000000000000000000000';
+    if (allZeroMant) {
+      type = sign === 0 ? 'inf+' : 'inf-';
+      value = sign === 0 ? '+Infinity' : '-Infinity';
+      formula = `Value = ${sign === 0 ? '+' : '−'}∞  (Exponent all 1s, Mantissa all 0s)`;
+    } else {
+      type = 'nan';
+      value = 'NaN';
+      formula = `Value = NaN  (Exponent all 1s, Mantissa ≠ 0)`;
+    }
+  } else if (expRaw === 0) {
+    // Zero or denormalised
+    const allZeroMant = parseInt(mantBits, 2) === 0;
+    if (allZeroMant) {
+      type = 'zero';
+      value = sign === 0 ? '+0' : '−0';
+      formula = `Value = ${sign === 0 ? '+' : '−'}0  (Exponent all 0s, Mantissa all 0s)`;
+    } else {
+      type = 'denorm';
+      const mantFrac = parseInt(mantBits, 2) / Math.pow(2, 23);
+      const realVal = (sign === 0 ? 1 : -1) * mantFrac * Math.pow(2, -126);
+      value = realVal.toPrecision(7);
+      expVal = -126;
+      mantVal = '0.' + mantBits;
+      formula = `Value = (−1)^${sign} × 0.${mantBits.slice(0,6)}… × 2^(−126)`;
+    }
+  } else {
+    type = 'normal';
+    expVal = expRaw - bias;
+    const mantFrac = 1 + parseInt(mantBits, 2) / Math.pow(2, 23);
+    const realVal = (sign === 0 ? 1 : -1) * mantFrac * Math.pow(2, expVal);
+    value = realVal.toPrecision(8);
+    mantVal = '1.' + mantBits;
+    formula = `Value = (−1)^${sign} × 1.${mantBits.slice(0,6)}… × 2^(${expRaw}−${bias}) = (−1)^${sign} × 1.m × 2^${expVal}`;
+  }
+
+  // Stored value via float32 read-back
+  const buf = new ArrayBuffer(4);
+  new Uint32Array(buf)[0] = bits32;
+  const storedFloat = new Float32Array(buf)[0];
+
+  return { bin, expBits, mantBits, sign, expRaw, expVal, mantVal, bias, hex, type, value, formula, storedFloat };
+}
+
+// Analyse double precision
+function analyseDouble(loHi) {
+  const bin = double64ToBin(loHi);
+  const hex = double64ToHex(loHi);
+  const sign = parseInt(bin[0], 2);
+  const expBits = bin.slice(1, 12);
+  const mantBits = bin.slice(12);
+  const expRaw = parseInt(expBits, 2);
+  const bias = 1023;
+
+  let type, value, formula, expVal, mantVal;
+
+  if (expRaw === 2047) {
+    const allZeroMant = !mantBits.includes('1');
+    if (allZeroMant) {
+      type = sign === 0 ? 'inf+' : 'inf-';
+      value = sign === 0 ? '+Infinity' : '-Infinity';
+      formula = `Value = ${sign === 0 ? '+' : '−'}∞  (Exponent all 1s, Mantissa all 0s)`;
+    } else {
+      type = 'nan'; value = 'NaN';
+      formula = `Value = NaN  (Exponent all 1s, Mantissa ≠ 0)`;
+    }
+  } else if (expRaw === 0) {
+    const allZeroMant = !mantBits.includes('1');
+    if (allZeroMant) {
+      type = 'zero';
+      value = sign === 0 ? '+0' : '−0';
+      formula = `Value = ${sign === 0 ? '+' : '−'}0`;
+    } else {
+      type = 'denorm';
+      // Approximate: use full float64 readback
+      const buf = new ArrayBuffer(8);
+      new Uint32Array(buf)[0] = loHi[0];
+      new Uint32Array(buf)[1] = loHi[1];
+      const f = new Float64Array(buf)[0];
+      value = f.toPrecision(15);
+      expVal = -1022;
+      formula = `Value = (−1)^${sign} × 0.mantissa × 2^(−1022)  (Denormalised)`;
+    }
+  } else {
+    type = 'normal';
+    expVal = expRaw - bias;
+    const buf = new ArrayBuffer(8);
+    new Uint32Array(buf)[0] = loHi[0];
+    new Uint32Array(buf)[1] = loHi[1];
+    const f = new Float64Array(buf)[0];
+    value = f.toPrecision(15);
+    mantVal = '1.' + mantBits;
+    formula = `Value = (−1)^${sign} × 1.mantissa × 2^(${expRaw}−${bias}) = (−1)^${sign} × 1.m × 2^${expVal}`;
+  }
+
+  const buf = new ArrayBuffer(8);
+  new Uint32Array(buf)[0] = loHi[0];
+  new Uint32Array(buf)[1] = loHi[1];
+  const storedFloat = new Float64Array(buf)[0];
+
+  return { bin, expBits, mantBits, sign, expRaw, expVal, mantVal, bias, hex, type, value, formula, storedFloat };
+}
+
+// Parse binary input (strip spaces)
+function parseBinaryInput(str, len) {
+  const clean = str.replace(/\s/g, '');
+  if (!/^[01]+$/.test(clean)) return null;
+  if (clean.length !== len) return null;
+  return clean;
+}
+
+// Parse hex input
+function parseHexInput(str, len) {
+  const clean = str.replace(/\s/g, '').replace(/^0x/i, '');
+  if (!/^[0-9a-fA-F]+$/.test(clean)) return null;
+  if (clean.length !== len) return null;
+  return clean;
+}
+
+// ─── MAIN CONVERT ─────────────────────────────────────────────────────────────
+function convert(prec) {
+  const mode = state[prec].mode;
+  const raw  = document.getElementById('inp-' + prec).value.trim();
+
+  if (!raw) {
+    document.getElementById('results-card').style.display = 'none';
+    return;
+  }
+
+  let analysis = null;
+  let inputError = null;
+
+  if (prec === 'single') {
+    if (mode === 'decimal') {
+      const ui = decimalToSingle(raw);
+      if (ui === null) { inputError = `"${raw}" is not a valid decimal number.`; }
+      else analysis = analyseSingle(ui);
+    } else if (mode === 'binary') {
+      const bin = parseBinaryInput(raw, 32);
+      if (!bin) { inputError = 'Please enter exactly 32 binary digits (0 or 1).'; }
+      else { const ui = parseInt(bin, 2); analysis = analyseSingle(ui); }
+    } else {
+      const hex = parseHexInput(raw, 8);
+      if (!hex) { inputError = 'Please enter exactly 8 hex digits (e.g. 40490FDB).'; }
+      else { const ui = parseInt(hex, 16); analysis = analyseSingle(ui); }
+    }
+  } else {
+    if (mode === 'decimal') {
+      const loHi = decimalToDouble(raw);
+      if (!loHi) { inputError = `"${raw}" is not a valid decimal number.`; }
+      else analysis = analyseDouble(loHi);
+    } else if (mode === 'binary') {
+      const bin = parseBinaryInput(raw, 64);
+      if (!bin) { inputError = 'Please enter exactly 64 binary digits (0 or 1).'; }
+      else {
+        const hiBin = bin.slice(0, 32), loBin = bin.slice(32);
+        const buf = new ArrayBuffer(8);
+        const ui = new Uint32Array(buf);
+        ui[1] = parseInt(hiBin, 2); ui[0] = parseInt(loBin, 2);
+        analysis = analyseDouble(ui);
+      }
+    } else {
+      const hex = parseHexInput(raw, 16);
+      if (!hex) { inputError = 'Please enter exactly 16 hex digits.'; }
+      else {
+        const buf = new ArrayBuffer(8);
+        const ui = new Uint32Array(buf);
+        ui[1] = parseInt(hex.slice(0,8), 16);
+        ui[0] = parseInt(hex.slice(8,16), 16);
+        analysis = analyseDouble(ui);
+      }
+    }
+  }
+
+  const card = document.getElementById('results-card');
+  card.style.display = 'block';
+  const content = document.getElementById('results-content');
+
+  if (inputError) {
+    content.innerHTML = `<div class="error-state">⚠️ ${inputError}</div>`;
+    return;
+  }
+
+  renderResults(prec, analysis, content);
+}
+
+// ─── RENDER RESULTS ───────────────────────────────────────────────────────────
+function renderResults(prec, a, container) {
+  const isDouble = prec === 'double';
+  const bitLen   = isDouble ? 64 : 32;
+  const expLen   = isDouble ? 11 : 8;
+
+  // Special badge
+  const badges = {
+    'nan':    ['nan',   '⚠️ NaN — Not a Number'],
+    'inf+':   ['inf',   '∞ Positive Infinity'],
+    'inf-':   ['inf',   '−∞ Negative Infinity'],
+    'zero':   ['zero',  '⓪ Zero (±0)'],
+    'denorm': ['denorm','⚡ Denormalised / Subnormal Number'],
+    'normal': ['normal','✓ Normalised Number']
+  };
+  const [badgeClass, badgeText] = badges[a.type] || ['normal','✓ Normalised Number'];
+
+  // Build bit display
+  const signBit  = a.bin[0];
+  const expStr   = a.bin.slice(1, 1 + expLen);
+  const mantStr  = a.bin.slice(1 + expLen);
+
+  function renderBits(bits, cls) {
+    return [...bits].map(b => `<span class="bit ${cls}">${b}</span>`).join('');
+  }
+
+  // Group mantissa into blocks of 4 for readability
+  function groupedMant(bits) {
+    const chunks = [];
+    for (let i = 0; i < bits.length; i += 8) {
+      chunks.push(`<span class="bit-group">${renderBits(bits.slice(i, i+8), 'bit-mant')}</span>`);
+    }
+    return chunks.join('<span class="bit-sep">·</span>');
+  }
+
+  const bitHTML = `
+    <span class="bit-group"><span class="bit bit-sign">${signBit}</span></span>
+    <span class="bit-sep"> </span>
+    <span class="bit-group">${renderBits(expStr, 'bit-exp')}</span>
+    <span class="bit-sep"> </span>
+    ${groupedMant(mantStr)}
+  `;
+
+  // Formatted binary with spaces
+  const binFormatted = `${a.bin[0]} ${a.bin.slice(1, 1+expLen)} ${a.bin.slice(1+expLen)}`;
+
+  // Stored value display
+  let storedDisplay = '';
+  if (a.type === 'nan') storedDisplay = 'NaN';
+  else if (a.type === 'inf+') storedDisplay = '+Infinity';
+  else if (a.type === 'inf-') storedDisplay = '-Infinity';
+  else if (a.type === 'zero') storedDisplay = a.sign === 0 ? '+0' : '-0';
+  else storedDisplay = a.storedFloat.toPrecision(isDouble ? 15 : 7);
+
+  // Exponent info
+  const expRowExtra = (a.type === 'normal' || a.type === 'denorm')
+    ? `<div class="td-note">${a.expRaw} − ${a.bias} = <strong>${a.expVal ?? -((isDouble ? 1022 : 126))}</strong></div>` : '';
+
+  container.innerHTML = `
+    <span class="special-badge ${badgeClass}">${badgeText}</span>
+
+    <div class="bit-display-wrap">
+      <div class="bit-display-title">Bit Layout (${bitLen}-bit)</div>
+      <div class="bit-legend">
+        <div class="legend-item"><span class="legend-dot legend-sign"></span>Sign (1 bit)</div>
+        <div class="legend-item"><span class="legend-dot legend-exp"></span>Exponent (${expLen} bits)</div>
+        <div class="legend-item"><span class="legend-dot legend-mant"></span>Mantissa (${bitLen - 1 - expLen} bits)</div>
+      </div>
+      <div class="bits-container">${bitHTML}</div>
+    </div>
+
+    <div class="formula-box">${a.formula}</div>
+
+    <div class="results-grid">
+      <div class="result-item highlight full-width">
+        <div class="result-label">Stored Value</div>
+        <div class="result-value">${storedDisplay}</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">Hexadecimal</div>
+        <div class="result-value copy-row">
+          <span id="hex-val">${a.hex}</span>
+          <button class="copy-btn" id="copy-hex-btn" onclick="copyHex('${a.hex}')">Copy</button>
+        </div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">Sign Bit</div>
+        <div class="result-value tag-sign">${signBit} (${a.sign === 0 ? 'positive' : 'negative'})</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">Exponent Bits (raw)</div>
+        <div class="result-value tag-exp">${expStr} = ${a.expRaw}</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">Mantissa Bits</div>
+        <div class="result-value tag-mant" style="font-size:11px;">${mantStr.slice(0,16)}${mantStr.length > 16 ? '…' : ''}</div>
+      </div>
+      <div class="result-item full-width">
+        <div class="result-label">Binary Representation</div>
+        <div class="result-value" style="font-size:11px;letter-spacing:0.05em;">${binFormatted}</div>
+      </div>
+    </div>
+
+    <p class="section-label" style="margin-top:1rem;">Field Breakdown</p>
+    <div style="overflow-x:auto;">
+      <table class="breakdown-table">
+        <thead>
+          <tr><th>Field</th><th>Bits</th><th>Binary</th><th>Value / Note</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-label tag-sign">Sign</td>
+            <td>1</td>
+            <td class="td-bits">${signBit}</td>
+            <td class="td-value">${a.sign === 0 ? '(+) Positive' : '(−) Negative'}</td>
+          </tr>
+          <tr>
+            <td class="td-label tag-exp">Exponent</td>
+            <td>${expLen}</td>
+            <td class="td-bits">${expStr}</td>
+            <td>
+              <span class="td-value">${a.expRaw}</span>
+              ${expRowExtra}
+            </td>
+          </tr>
+          <tr>
+            <td class="td-label tag-mant">Mantissa</td>
+            <td>${bitLen - 1 - expLen}</td>
+            <td class="td-bits" style="font-size:11px;">${mantStr.slice(0,24)}${mantStr.length > 24 ? '…' : ''}</td>
+            <td class="td-value">${a.mantVal ? a.mantVal.slice(0,10) + (a.mantVal.length > 10 ? '…' : '') : '—'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ─── COPY HEX ─────────────────────────────────────────────────────────────────
+function copyHex(hex) {
+  navigator.clipboard.writeText(hex).then(() => {
+    const btn = document.getElementById('copy-hex-btn');
+    if (btn) { btn.textContent = '✓ Copied'; btn.classList.add('copied'); }
+    showToast('Hex copied to clipboard');
+    setTimeout(() => { if (btn) { btn.textContent = 'Copy'; btn.classList.remove('copied'); } }, 2000);
+  }).catch(() => showToast('Copy failed'));
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+initExamples();
+
+// Allow Enter key to trigger conversion
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const active = document.querySelector('.tab-panel.active');
+    if (active) {
+      const id = active.id.replace('panel-', '');
+      convert(id);
+    }
+  }
+});
+</script>
+</body>
+</html>
