@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stephen's Tools</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1100px;
+            width: 100%;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+        
+        .site-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 300;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+        
+        .site-description {
+            font-size: 1.125rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+            font-weight: 400;
+        }
+        
+        .divider {
+            width: 60px;
+            height: 1px;
+            background: #1a1a1a;
+            margin: 40px auto;
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            margin-bottom: 80px;
+        }
+        
+        .app-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 48px 36px;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #1a1a1a;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .app-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
+        
+        .app-number {
+            font-family: 'Crimson Pro', serif;
+            font-size: 0.875rem;
+            color: #999;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+        
+        .app-card h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+            letter-spacing: -0.01em;
+        }
+        
+        .app-card p {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+        
+        .app-meta {
+            font-size: 0.875rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+        
+        .arrow {
+            display: inline-block;
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        .app-card:hover .arrow {
+            transform: translateX(4px);
+        }
+        
+        footer {
+            text-align: center;
+            padding-top: 60px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        footer p {
+            color: #999;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+        
+        .footer-links {
+            margin-top: 24px;
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+        }
+        
+        .footer-links a {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-size: 0.875rem;
+            position: relative;
+            font-weight: 500;
+        }
+        
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #1a1a1a;
+            transition: width 0.3s ease;
+        }
+        
+        .footer-links a:hover::after {
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 20px;
+            }
+            
+            header {
+                margin-bottom: 60px;
+            }
+            
+            .apps-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .app-card {
+                padding: 36px 28px;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="site-title">Stephen's Tools</h1>
+            <div class="divider"></div>
+            <p class="site-description">
+                A work area for my self-contained web applications.
+            </p>
+        </header>
+        
+        <div class="apps-grid">
+            <a href="pillchart/" class="app-card">
+                <div class="app-number">01</div>
+                <h2>Pill Chart</h2>
+                <p>To keep a record of Medication, that is easily displayed and can be supplied to a Specialist.</p>
+                <div class="app-meta">
+                    Health/Medical <span class="arrow">→</span>
+                </div>
+            </a>
+            
+            <a href="task-manager/" class="app-card">
+                <div class="app-number">02</div>
+                <h2>Task Manager</h2>
+                <p>Persistent to-do list with local storage and automatic backups. Your data stays on your device.</p>
+                <div class="app-meta">
+                    Productivity <span class="arrow">→</span>
+                </div>
+            </a>
+            <a href="tempconvert/" class="app-card">
+                <div class="app-number">02</div>
+                <h2>Temperture Converter</h2>
+                <p>A simple temperature converter from/to Celicus and Fahrenheit.</p>
+                <div class="app-meta">
+                    Productivity <span class="arrow">→</span>
+                </div>
+            </a>
+        </div>
+        
+        <footer>
+            <p>Hosted on GitHub Pages</p>
+            <p> Australia • 2026</p>
+            <div class="footer-links">
+                <a href="https://github.com/stephen-apps">GitHub</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
