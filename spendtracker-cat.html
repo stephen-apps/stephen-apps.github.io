@@ -1,0 +1,2523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpendTracker — Cat's Projects</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --color-brand-100: #a5b4fc;
+    --color-brand-300: #818cf8;
+    --color-brand-500: #6366f1;
+    --color-brand-gradient: linear-gradient(135deg, #a5b4fc 0%, #818cf8 40%, #6366f1 100%);
+    --color-brand-gradient-simple: linear-gradient(135deg, #6366f1, #818cf8);
+    --color-bg: #f0f2f5;
+    --color-surface: #ffffff;
+    --color-text-primary: #1a1a2e;
+    --color-text-body: #1e293b;
+    --color-text-secondary: #64748b;
+    --color-text-muted: #94a3b8;
+    --color-text-faint: #cbd5e1;
+    --color-border: #e2e8f0;
+    --color-border-light: #f1f5f9;
+    --color-input-bg: #f8fafc;
+    --color-header-from: #1e293b;
+    --color-header-to: #0f172a;
+    --color-danger: #dc2626;
+    --color-danger-bg: #fef2f2;
+    --color-danger-border: #fca5a5;
+    --color-warning: #d97706;
+    --color-warning-bg: #fffbeb;
+    --color-info: #3b82f6;
+    --color-info-bg: #eff6ff;
+    --color-success: #059669;
+    --color-success-bg: #ecfdf5;
+    --color-success-border: #6ee7b7;
+    --color-action-from: #f97316;
+    --color-action-to: #ea580c;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-pill: 20px;
+    --shadow-card: 0 4px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-task: 0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.04);
+    --shadow-focus: 0 0 0 3px rgba(99,102,241,0.12);
+    --shadow-brand: 0 2px 8px rgba(99,102,241,0.35);
+    --shadow-brand-hover: 0 4px 14px rgba(99,102,241,0.4);
+    --shadow-action: 0 2px 12px rgba(249,115,22,0.4);
+    --shadow-modal: 0 20px 60px rgba(0,0,0,0.15);
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-size-xs: 11px;
+    --font-size-sm: 12px;
+    --font-size-md: 13px;
+    --font-size-base: 14px;
+    --font-size-lg: 15px;
+    --transition-fast: 0.12s;
+    --transition-base: 0.15s;
+    --max-width: 780px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-family);
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    padding-bottom: 4rem;
+  }
+
+  /* ── Header ── */
+  .app-header {
+    background: linear-gradient(135deg, var(--color-header-from) 0%, var(--color-header-to) 100%);
+    padding: 2.25rem 1.5rem 3.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .app-header::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: rgba(99,102,241,0.15); border-radius: 50%;
+  }
+  .app-header::after {
+    content: ''; position: absolute; bottom: -80px; left: 30%;
+    width: 300px; height: 300px;
+    background: rgba(99,102,241,0.08); border-radius: 50%;
+  }
+  .header-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    position: relative; z-index: 1;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .header-left {}
+  .header-eyebrow {
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.45);
+    letter-spacing: 0.05em; margin-bottom: 4px;
+  }
+  .header-title {
+    font-size: 36px; font-weight: 900; letter-spacing: -1.5px;
+    background: var(--color-brand-gradient);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1;
+  }
+  .header-pills {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-pill);
+    padding: 4px 14px;
+    font-size: var(--font-size-sm);
+    color: rgba(255,255,255,0.55);
+    font-weight: 500;
+  }
+  .stat-pill span { color: #fff; font-weight: 700; }
+  .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* ── Main layout ── */
+  .app-main {
+    max-width: var(--max-width);
+    margin: -2rem auto 0;
+    padding: 0 1rem;
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; gap: 1.25rem;
+  }
+
+  /* ── Section card ── */
+  .card {
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-card);
+    padding: 1.5rem;
+  }
+  .section-label {
+    font-size: var(--font-size-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border-light);
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── Cost toggle ── */
+  .cost-toggle-wrap {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toggle-track {
+    width: 44px; height: 24px;
+    background: var(--color-border);
+    border-radius: 12px;
+    cursor: pointer; position: relative;
+    transition: background var(--transition-base);
+    border: none; outline: none;
+    flex-shrink: 0;
+  }
+  .toggle-track.on { background: var(--color-brand-500); }
+  .toggle-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    background: #fff; border-radius: 50%;
+    transition: transform var(--transition-base);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle-track.on .toggle-thumb { transform: translateX(20px); }
+  .toggle-label {
+    font-size: var(--font-size-sm); font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+  .toggle-label.active { color: var(--color-brand-500); }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; margin-bottom: 1.25rem;
+  }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .toolbar-right { display: flex; gap: 8px; align-items: center; }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    font-family: var(--font-family); font-size: var(--font-size-base); font-weight: 600;
+    padding: 9px 20px;
+    background: var(--color-brand-gradient-simple);
+    color: #fff; border: none; border-radius: var(--radius-lg); cursor: pointer;
+    box-shadow: var(--shadow-brand);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), opacity var(--transition-base);
+    white-space: nowrap;
+  }
+  .btn-primary:hover { opacity: 0.92; box-shadow: var(--shadow-brand-hover); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-ghost {
+    font-family: var(--font-family); font-size: var(--font-size-sm); font-weight: 500;
+    padding: 6px 14px; border-radius: var(--radius-md);
+    border: 1.5px solid transparent; cursor: pointer;
+    transition: background var(--transition-base), border-color var(--transition-base);
+    background: var(--color-surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06); white-space: nowrap;
+  }
+  .btn-ghost-neutral { color: #6b7280; border-color: #e5e7eb; }
+  .btn-ghost-neutral:hover { background: #f9fafb; border-color: #d1d5db; }
+  .btn-ghost-success { color: var(--color-success); border-color: #d1fae5; }
+  .btn-ghost-success:hover { background: var(--color-success-bg); border-color: var(--color-success-border); }
+  .btn-ghost-danger  { color: var(--color-danger); border-color: #fee2e2; }
+  .btn-ghost-danger:hover  { background: var(--color-danger-bg); border-color: var(--color-danger-border); }
+  .btn-ghost-info    { color: var(--color-info); border-color: #bfdbfe; }
+  .btn-ghost-info:hover { background: var(--color-info-bg); border-color: #93c5fd; }
+
+  .btn-save {
+    font-family: var(--font-family); font-size: var(--font-size-sm); font-weight: 500;
+    padding: 6px 16px; border-radius: var(--radius-md); border: none;
+    background: var(--color-brand-gradient-simple);
+    color: #fff; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(99,102,241,0.3);
+    transition: opacity var(--transition-base);
+  }
+  .btn-save:hover { opacity: 0.88; }
+
+  .btn-cancel {
+    font-family: var(--font-family); font-size: var(--font-size-sm); font-weight: 500;
+    padding: 6px 16px; border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border); background: var(--color-surface);
+    color: var(--color-text-secondary); cursor: pointer;
+    transition: background var(--transition-fast);
+  }
+  .btn-cancel:hover { background: var(--color-input-bg); }
+
+  .btn-destructive {
+    font-family: var(--font-family); font-size: var(--font-size-md); font-weight: 500;
+    padding: 8px 18px; border-radius: var(--radius-md);
+    border: none; background: var(--color-danger); color: #fff;
+    cursor: pointer; transition: opacity var(--transition-fast);
+  }
+  .btn-destructive:hover { opacity: 0.88; }
+
+  .btn-icon {
+    background: none; border: none; cursor: pointer;
+    font-size: var(--font-size-base); color: var(--color-text-muted);
+    padding: 3px 6px; border-radius: var(--radius-sm);
+    transition: background var(--transition-fast), color var(--transition-fast);
+  }
+  .btn-icon:hover { background: var(--color-border-light); color: #475569; }
+  .btn-icon-danger:hover { background: var(--color-danger-bg) !important; color: var(--color-danger) !important; }
+  .btn-icon-warning:hover { background: var(--color-warning-bg) !important; color: var(--color-warning) !important; }
+  .btn-icon-success:hover { background: var(--color-success-bg) !important; color: var(--color-success) !important; }
+  .btn-icon-info:hover { background: var(--color-info-bg) !important; color: var(--color-info) !important; }
+
+  /* ── Summary cards ── */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px; margin-bottom: 1.25rem;
+  }
+  .summary-card {
+    background: var(--color-input-bg);
+    border-radius: var(--radius-xl);
+    padding: 14px 16px;
+    border: 1px solid var(--color-border-light);
+  }
+  .summary-label {
+    font-size: var(--font-size-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--color-text-muted); margin-bottom: 6px;
+  }
+  .summary-value {
+    font-size: 22px; font-weight: 800;
+    color: var(--color-text-body); letter-spacing: -0.5px;
+  }
+  .summary-sub {
+    font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 2px;
+  }
+  .summary-card.highlight .summary-value { color: var(--color-brand-500); }
+
+  /* ── Subscription cards ── */
+  .sub-list { display: flex; flex-direction: column; gap: 10px; }
+  .sub-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: 12px 16px;
+    box-shadow: var(--shadow-task);
+    display: flex; align-items: center; gap: 12px;
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+  }
+  .sub-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+    transform: translateY(-1px);
+  }
+  .sub-card.overdue { border-left: 3px solid var(--color-danger); }
+  .sub-card.due-soon { border-left: 3px solid var(--color-warning); }
+  .sub-card.due-ok { border-left: 3px solid var(--color-success); }
+
+  .sub-swatch {
+    width: 38px; height: 38px;
+    border-radius: var(--radius-md); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .sub-info { flex: 1; min-width: 0; }
+  .sub-name { font-size: var(--font-size-base); font-weight: 600; color: var(--color-text-body); }
+  .sub-meta { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 2px; }
+  .sub-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .sub-cost { font-size: var(--font-size-base); font-weight: 700; color: var(--color-text-body); }
+  .sub-cost-per { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+  .sub-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  /* ── Due badges ── */
+  .due-badge {
+    font-size: var(--font-size-xs); padding: 3px 9px;
+    border-radius: var(--radius-pill); white-space: nowrap;
+    font-weight: 600; letter-spacing: 0.01em; flex-shrink: 0;
+  }
+  .badge-overdue  { background: var(--color-danger-bg); color: var(--color-danger); }
+  .badge-soon     { background: var(--color-warning-bg); color: var(--color-warning); }
+  .badge-ok       { background: var(--color-success-bg); color: var(--color-success); }
+  .badge-monthly  { background: #ede9fe; color: #7c3aed; }
+  .badge-annual   { background: var(--color-info-bg); color: var(--color-info); }
+
+  /* ── Category badge ── */
+  .cat-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-border-light);
+    color: var(--color-text-secondary);
+  }
+
+  /* ── Filter tabs ── */
+  .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-tab {
+    font-family: var(--font-family); font-size: var(--font-size-sm); font-weight: 500;
+    padding: 5px 14px; border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface); color: var(--color-text-muted);
+    cursor: pointer; transition: all var(--transition-base);
+  }
+  .filter-tab:hover { border-color: var(--color-brand-300); color: var(--color-brand-500); }
+  .filter-tab.active {
+    background: var(--color-brand-500); border-color: var(--color-brand-500);
+    color: #fff;
+  }
+
+  /* ── Form fields ── */
+  .field {
+    font-family: var(--font-family); font-size: var(--font-size-base);
+    padding: 9px 12px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    outline: none; width: 100%;
+  }
+  .field:focus {
+    border-color: var(--color-brand-500);
+    box-shadow: var(--shadow-focus);
+    background: var(--color-surface);
+  }
+  select.field { appearance: auto; }
+  .field-label {
+    font-size: var(--font-size-sm); font-weight: 600;
+    color: var(--color-text-secondary); margin-bottom: 5px; display: block;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+
+  /* ── Modals ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,0.52);
+    z-index: 100;
+    display: none; align-items: center; justify-content: center;
+    padding: 1rem;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    padding: 1.75rem;
+    width: 100%; max-width: 500px;
+    box-shadow: var(--shadow-modal);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--color-text-body); margin-bottom: 1.5rem; }
+  .form-grid { display: flex; flex-direction: column; gap: 1rem; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; }
+
+  /* ── Colour picker ── */
+  .colour-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+  .colour-swatch {
+    width: 28px; height: 28px; border-radius: var(--radius-md);
+    cursor: pointer; border: 2.5px solid transparent;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+  }
+  .colour-swatch:hover { transform: scale(1.15); }
+  .colour-swatch.selected { border-color: var(--color-text-body); transform: scale(1.15); }
+
+  /* ── Confirm modal ── */
+  .confirm-modal {
+    background: var(--color-surface); border-radius: var(--radius-2xl);
+    padding: 1.75rem; max-width: 340px; width: 100%;
+    box-shadow: var(--shadow-modal);
+  }
+  .confirm-modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-text-body); }
+  .confirm-modal p  { font-size: var(--font-size-md); color: var(--color-text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 1.5rem;
+    background: var(--color-text-body); color: #fff;
+    font-size: var(--font-size-sm); font-weight: 500;
+    padding: 10px 18px; border-radius: var(--radius-pill);
+    z-index: 999; box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center; color: var(--color-text-muted);
+    font-size: var(--font-size-base); padding: 3rem 0;
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 0.75rem; }
+  .empty-hint { margin-top: 6px; font-size: var(--font-size-sm); }
+
+  /* ── Upcoming warnings banner ── */
+  .warning-banner {
+    background: var(--color-warning-bg);
+    border: 1px solid #fde68a;
+    border-radius: var(--radius-xl);
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: var(--font-size-md); color: var(--color-warning);
+    font-weight: 500;
+  }
+
+  /* ── Upcoming list ── */
+  .upcoming-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border-light);
+    font-size: var(--font-size-md);
+  }
+  .upcoming-item:last-child { border-bottom: none; }
+  .upcoming-left { display: flex; align-items: center; gap: 8px; }
+  .upcoming-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Sort select ── */
+  .sort-select {
+    font-family: var(--font-family); font-size: var(--font-size-sm);
+    padding: 5px 10px; border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface); color: var(--color-text-secondary);
+    cursor: pointer; outline: none;
+  }
+  .sort-select:focus { border-color: var(--color-brand-500); }
+
+  /* ── Payment picker ── */
+  .payment-picker { display: flex; flex-wrap: wrap; gap: 10px; }
+  .payment-option { position: relative; }
+  .payment-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .payment-tile {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 5px; width: 88px; height: 60px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-input-bg);
+    cursor: pointer;
+    transition: border-color var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
+    user-select: none;
+  }
+  .payment-tile:hover { border-color: var(--color-brand-300); background: var(--color-surface); }
+  .payment-option input[type="radio"]:checked + .payment-tile {
+    border-color: var(--color-brand-500);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-focus);
+  }
+  .payment-tile-label {
+    font-size: 10px; font-weight: 600; color: var(--color-text-muted); letter-spacing: 0.02em;
+  }
+  .payment-option input[type="radio"]:checked + .payment-tile .payment-tile-label {
+    color: var(--color-brand-500);
+  }
+  /* Payment badge on card */
+  .payment-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: var(--radius-pill);
+    background: var(--color-border-light); color: var(--color-text-secondary);
+  }
+
+  /* ── Tab nav ── */
+  .main-tabs-nav {
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-card);
+    display: flex;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+  .main-tab-btn {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    padding: 14px 24px;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    transition: color var(--transition-base), border-color var(--transition-base), background var(--transition-base);
+    white-space: nowrap;
+    flex: 1;
+  }
+  .main-tab-btn:hover:not(.active) { color: var(--color-text-secondary); background: var(--color-border-light); }
+  .main-tab-btn.active { color: var(--color-brand-500); border-bottom-color: var(--color-brand-500); font-weight: 600; }
+
+  /* ── Calendar ── */
+  .cal-year-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .cal-year-label {
+    font-size: var(--font-size-lg); font-weight: 700; color: var(--color-text-body);
+  }
+  .cal-nav-btn {
+    font-family: var(--font-family); font-size: var(--font-size-base); font-weight: 600;
+    padding: 5px 14px; border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface); color: var(--color-text-secondary);
+    cursor: pointer; transition: background var(--transition-base), border-color var(--transition-base);
+  }
+  .cal-nav-btn:hover { background: var(--color-input-bg); border-color: var(--color-brand-300); color: var(--color-brand-500); }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 680px) { .cal-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 400px) { .cal-grid { grid-template-columns: 1fr; } }
+
+  .cal-month {
+    background: var(--color-input-bg);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-light);
+    padding: 10px;
+  }
+  .cal-month-name {
+    font-size: var(--font-size-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: 8px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--color-border-light);
+  }
+  .cal-dow-row {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 3px;
+  }
+  .cal-dow {
+    font-size: 9px; font-weight: 700; text-align: center;
+    color: var(--color-text-faint); text-transform: uppercase;
+    padding: 2px 0;
+  }
+  .cal-days {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+  }
+  .cal-day {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding-top: 2px;
+    border-radius: var(--radius-sm);
+    cursor: default;
+    min-width: 0;
+  }
+  .cal-day.has-spend { cursor: pointer; }
+  .cal-day.has-spend:hover { background: var(--color-border-light); }
+  .cal-day.today { background: rgba(99,102,241,0.08); border-radius: var(--radius-sm); }
+  .cal-day.today .cal-day-num { color: var(--color-brand-500); font-weight: 700; }
+  .cal-day-num {
+    font-size: 9px; font-weight: 500;
+    color: var(--color-text-muted);
+    line-height: 1; margin-bottom: 1px;
+    z-index: 1;
+  }
+  .cal-day.other-month .cal-day-num { color: var(--color-text-faint); }
+  .cal-dots {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 1px; max-width: 100%;
+  }
+  .cal-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* ── Calendar tooltip / popover ── */
+  .cal-popover {
+    position: fixed;
+    background: var(--color-text-body);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    padding: 10px 14px;
+    font-size: var(--font-size-sm);
+    z-index: 500;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    min-width: 180px;
+    max-width: 260px;
+    box-shadow: var(--shadow-modal);
+  }
+  .cal-popover.visible { opacity: 1; pointer-events: auto; }
+  .cal-popover-date {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+  }
+  .cal-popover-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+  }
+  .cal-popover-item:last-child { border-bottom: none; }
+  .cal-popover-item:hover { opacity: 0.85; }
+  .cal-popover-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .cal-popover-name { flex: 1; font-weight: 600; font-size: var(--font-size-sm); }
+  .cal-popover-cost { font-size: var(--font-size-xs); color: rgba(255,255,255,0.6); white-space: nowrap; }
+
+  /* ── Calendar legend ── */
+  .cal-legend {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 1.25rem; padding-top: 1rem;
+    border-top: 1px solid var(--color-border-light);
+  }
+  .cal-legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: var(--font-size-xs); color: var(--color-text-secondary);
+    cursor: pointer; padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid transparent;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+  }
+  .cal-legend-item:hover { background: var(--color-border-light); }
+  .cal-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .cal-legend-name { font-weight: 600; }
+
+  /* ── Emoji picker ── */
+  .emoji-picker-wrap {
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-input-bg);
+    overflow: hidden;
+  }
+  .emoji-preview-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-surface);
+  }
+  .emoji-preview-swatch {
+    width: 36px; height: 36px; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .emoji-cat-tabs {
+    display: flex; gap: 4px; flex-wrap: wrap;
+  }
+  .emoji-cat-btn {
+    font-family: var(--font-family); font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface); color: var(--color-text-muted);
+    cursor: pointer; transition: all var(--transition-fast);
+    white-space: nowrap;
+  }
+  .emoji-cat-btn:hover { border-color: var(--color-brand-300); color: var(--color-brand-500); }
+  .emoji-cat-btn.active {
+    background: var(--color-brand-500); border-color: var(--color-brand-500); color: #fff;
+  }
+  .emoji-clear-btn {
+    font-family: var(--font-family); font-size: 11px; font-weight: 500;
+    padding: 4px 10px; border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-border);
+    background: none; color: var(--color-text-muted);
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    transition: all var(--transition-fast);
+  }
+  .emoji-clear-btn:hover { background: var(--color-danger-bg); border-color: var(--color-danger-border); color: var(--color-danger); }
+  .emoji-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+    gap: 2px; padding: 8px; max-height: 140px; overflow-y: auto;
+  }
+  .emoji-btn {
+    font-size: 20px; line-height: 1;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-md); border: none; background: none;
+    cursor: pointer; transition: background var(--transition-fast), transform var(--transition-fast);
+  }
+  .emoji-btn:hover { background: var(--color-border-light); transform: scale(1.2); }
+  .emoji-btn.selected { background: rgba(99,102,241,0.15); outline: 2px solid var(--color-brand-500); }
+
+  /* ── Status badges (active / paused / cancelled) ── */
+  .badge-active    { background: var(--color-success-bg); color: var(--color-success); }
+  .badge-paused    { background: var(--color-warning-bg); color: var(--color-warning); }
+  .badge-cancelled { background: var(--color-danger-bg);  color: var(--color-danger); }
+  .sub-card.paused    { opacity: 0.55; }
+  .sub-card.cancelled { opacity: 0.38; }
+  .sub-card.paused .sub-name,
+  .sub-card.cancelled .sub-name { text-decoration: line-through; }
+
+  /* ── Search input ── */
+  .search-wrap {
+    position: relative; flex: 1; min-width: 140px; max-width: 240px;
+  }
+  .search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    font-size: 13px; color: var(--color-text-muted); pointer-events: none;
+  }
+  .search-input {
+    font-family: var(--font-family); font-size: var(--font-size-sm);
+    padding: 6px 10px 6px 30px;
+    border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+    background: var(--color-surface); color: var(--color-text-primary);
+    outline: none; width: 100%;
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  }
+  .search-input:focus {
+    border-color: var(--color-brand-500);
+    box-shadow: var(--shadow-focus);
+  }
+  .search-input::placeholder { color: var(--color-text-faint); }
+
+  /* ── Chart tab ── */
+  .chart-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem; flex-wrap: wrap; gap: 10px;
+  }
+  .chart-type-btns { display: flex; gap: 6px; }
+  .chart-type-btn {
+    font-family: var(--font-family); font-size: var(--font-size-sm); font-weight: 500;
+    padding: 5px 14px; border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface); color: var(--color-text-muted);
+    cursor: pointer; transition: all var(--transition-base);
+  }
+  .chart-type-btn.active {
+    background: var(--color-brand-500); border-color: var(--color-brand-500); color: #fff;
+  }
+  .chart-container {
+    display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;
+  }
+  .chart-canvas-wrap {
+    flex-shrink: 0; position: relative;
+    width: 220px; height: 220px;
+  }
+  @media (max-width: 540px) { .chart-canvas-wrap { width: 180px; height: 180px; } }
+  .chart-breakdown-list { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 8px; }
+  .chart-breakdown-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .chart-breakdown-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .chart-breakdown-bar-wrap { flex: 1; background: var(--color-border-light); border-radius: 4px; height: 8px; overflow: hidden; }
+  .chart-breakdown-bar { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+  .chart-breakdown-label { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-body); min-width: 90px; }
+  .chart-breakdown-cost { font-size: var(--font-size-xs); color: var(--color-text-muted); white-space: nowrap; min-width: 70px; text-align: right; }
+  .chart-empty { text-align: center; color: var(--color-text-muted); padding: 2rem 0; font-size: var(--font-size-base); }
+
+  /* ── Onboarding ── */
+  .onboarding-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,0.65);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+  }
+  .onboarding-modal {
+    background: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    padding: 2rem;
+    width: 100%; max-width: 440px;
+    box-shadow: var(--shadow-modal);
+    position: relative;
+  }
+  .onboarding-step { display: none; }
+  .onboarding-step.active { display: block; }
+  .onboarding-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(99,102,241,0.1);
+    color: var(--color-brand-500);
+    font-size: var(--font-size-xs); font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 4px 12px; border-radius: var(--radius-pill);
+    margin-bottom: 1rem;
+  }
+  .onboarding-icon {
+    font-size: 42px; margin-bottom: 1rem; display: block;
+  }
+  .onboarding-title {
+    font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+    color: var(--color-text-body); margin-bottom: 0.5rem;
+  }
+  .onboarding-body {
+    font-size: var(--font-size-base); color: var(--color-text-secondary);
+    line-height: 1.6; margin-bottom: 1.5rem;
+  }
+  .onboarding-body strong { color: var(--color-text-body); }
+  .onboarding-tips {
+    background: var(--color-input-bg);
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
+    margin-bottom: 1.5rem;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .onboarding-tip {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: var(--font-size-sm); color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+  .onboarding-tip-icon {
+    font-size: 16px; flex-shrink: 0; margin-top: 1px;
+  }
+  .onboarding-dots {
+    display: flex; gap: 6px; justify-content: center; margin-bottom: 1.25rem;
+  }
+  .onboarding-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--color-border);
+    transition: background var(--transition-base);
+  }
+  .onboarding-dot.active { background: var(--color-brand-500); }
+  .onboarding-actions {
+    display: flex; gap: 10px; justify-content: flex-end; align-items: center;
+  }
+  .onboarding-skip {
+    font-family: var(--font-family); font-size: var(--font-size-sm);
+    font-weight: 500; color: var(--color-text-muted);
+    background: none; border: none; cursor: pointer;
+    padding: 6px 10px; border-radius: var(--radius-md);
+    transition: color var(--transition-fast);
+    margin-right: auto;
+  }
+  .onboarding-skip:hover { color: var(--color-text-secondary); }
+
+  @media (max-width: 540px) {
+    .form-row-2, .form-row-3 { grid-template-columns: 1fr; }
+    .header-title { font-size: 28px; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="app-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <p class="header-eyebrow" style="font-size:18px;">Cat's</p>
+      <div class="header-title">SPENDTRACKER</div>
+      <div class="header-pills" id="headerPills">
+        <div class="stat-pill"><span id="pillCount">0</span> active</div>
+        <div class="stat-pill">A$<span id="pillMonthly">0.00</span>/mo</div>
+        <div class="stat-pill">A$<span id="pillAnnual">0.00</span>/yr</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-ghost btn-ghost-info" onclick="triggerImport()">⬆ Import</button>
+      <button class="btn-ghost btn-ghost-success" onclick="exportData()">⬇ Export</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-main">
+
+  <!-- Tab Nav -->
+  <div class="main-tabs-nav">
+    <button class="main-tab-btn active" id="tabBtnList" onclick="switchTab('list')">📋 Recurring Spend</button>
+    <button class="main-tab-btn" id="tabBtnCal" onclick="switchTab('calendar')">📅 Year Calendar</button>
+    <button class="main-tab-btn" id="tabBtnChart" onclick="switchTab('chart')">📊 Breakdown</button>
+  </div>
+
+  <!-- ── LIST TAB ── -->
+  <div id="tabList">
+
+  <!-- Upcoming warnings -->
+  <div id="upcomingCard" class="card" style="display:none;">
+    <p class="section-label">⚠ Upcoming Renewals</p>
+    <div id="upcomingList"></div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card">
+    <div class="toolbar">
+      <p class="section-label" style="margin:0;padding:0;border:none;">Cost Summary</p>
+      <div class="cost-toggle-wrap">
+        <span class="toggle-label" id="lblMonthly" style="">Monthly</span>
+        <button class="toggle-track" id="costToggle" onclick="toggleCostView()" aria-label="Toggle annual view">
+          <div class="toggle-thumb"></div>
+        </button>
+        <span class="toggle-label" id="lblAnnual">Annual</span>
+      </div>
+    </div>
+    <div class="summary-grid" id="summaryGrid">
+      <div class="summary-card highlight">
+        <div class="summary-label">Total Cost</div>
+        <div class="summary-value" id="sumTotal">A$0.00</div>
+        <div class="summary-sub" id="sumTotalSub">per month</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Monthly Subs</div>
+        <div class="summary-value" id="sumMonthlyCount">0</div>
+        <div class="summary-sub" id="sumMonthlyCost">A$0.00/mo combined</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Annual Subs</div>
+        <div class="summary-value" id="sumAnnualCount">0</div>
+        <div class="summary-sub" id="sumAnnualCost">A$0.00/yr combined</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Due This Month</div>
+        <div class="summary-value" id="sumDueCount">0</div>
+        <div class="summary-sub">renewals upcoming</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recurring Spend list -->
+  <div class="card">
+    <div class="toolbar" style="margin-bottom:1rem;">
+      <div class="toolbar-left">
+        <p class="section-label" style="margin:0;padding:0;border:none;">Recurring Spend</p>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn-primary" onclick="openAddModal()">+ Recurring Spend</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="toolbar-left" style="flex-wrap:wrap;gap:8px;">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search…" oninput="renderList()" />
+        </div>
+        <div class="filter-tabs" id="filterTabs">
+          <button class="filter-tab active" data-filter="all" onclick="setFilter(this,'all')">All</button>
+          <button class="filter-tab" data-filter="active" onclick="setFilter(this,'active')">Active</button>
+          <button class="filter-tab" data-filter="overdue" onclick="setFilter(this,'overdue')">Overdue</button>
+          <button class="filter-tab" data-filter="soon" onclick="setFilter(this,'soon')">Due Soon</button>
+          <button class="filter-tab" data-filter="monthly" onclick="setFilter(this,'monthly')">Monthly</button>
+          <button class="filter-tab" data-filter="annual" onclick="setFilter(this,'annual')">Annual</button>
+          <button class="filter-tab" data-filter="paused" onclick="setFilter(this,'paused')">⏸ Paused</button>
+          <button class="filter-tab" data-filter="cancelled" onclick="setFilter(this,'cancelled')">✕ Cancelled</button>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <select class="sort-select" id="sortSelect" onchange="renderList()">
+          <option value="renewal">Sort: Renewal</option>
+          <option value="name">Sort: Name</option>
+          <option value="cost-high">Sort: Cost ↓</option>
+          <option value="cost-low">Sort: Cost ↑</option>
+        </select>
+      </div>
+    </div>
+    <div class="sub-list" id="subList">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div>No recurring spend added yet.</div>
+        <div class="empty-hint">Click <strong>+ Recurring Spend</strong> to get started.</div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /tabList -->
+
+  <!-- ── CALENDAR TAB ── -->
+  <div id="tabCalendar" style="display:none;">
+    <div class="card">
+      <div class="cal-year-nav">
+        <button class="cal-nav-btn" onclick="calChangeYear(-1)">&#8592; Prev</button>
+        <span class="cal-year-label" id="calYearLabel">2026</span>
+        <button class="cal-nav-btn" onclick="calChangeYear(1)">Next &#8594;</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend" id="calLegend"></div>
+    </div>
+  </div>
+
+  <!-- ── CHART TAB ── -->
+  <div id="tabChart" style="display:none;">
+    <div class="card">
+      <div class="chart-toggle-row">
+        <div class="chart-type-btns">
+          <button class="chart-type-btn active" id="chartViewCat" onclick="setChartView('category')">By Category</button>
+          <button class="chart-type-btn" id="chartViewMo" onclick="setChartView('monthly')">By Month</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div class="chart-type-btns">
+            <button class="chart-type-btn active" id="chartTypePie" onclick="setChartType('pie')">Pie</button>
+            <button class="chart-type-btn" id="chartTypeBar" onclick="setChartType('bar')">Bar</button>
+          </div>
+          <div class="cost-toggle-wrap" id="chartCostToggleWrap">
+            <span class="toggle-label" id="chartLblMo">Monthly</span>
+            <button class="toggle-track" id="chartCostToggle" onclick="toggleChartView()" aria-label="Toggle annual">
+              <div class="toggle-thumb"></div>
+            </button>
+            <span class="toggle-label" id="chartLblAn">Annual</span>
+          </div>
+        </div>
+      </div>
+      <div id="chartSectionLabel" style="font-size:var(--font-size-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);margin-bottom:1rem;">Spend by Category</div>
+      <div id="chartArea"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Add Recurring Spend</div>
+    <div class="form-grid">
+      <div class="form-row-2">
+        <div class="field-group">
+          <label class="field-label">Service Name <span style="color:var(--color-danger)">*</span></label>
+          <input type="text" class="field" id="fName" placeholder="e.g. Netflix" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Category</label>
+          <select class="field" id="fCategory">
+            <option value="Streaming">Streaming</option>
+            <option value="Music">Music</option>
+            <option value="Software">Software</option>
+            <option value="Cloud Storage">Cloud Storage</option>
+            <option value="News & Media">News &amp; Media</option>
+            <option value="Gaming">Gaming</option>
+            <option value="Health & Fitness">Health &amp; Fitness</option>
+            <option value="Finance">Finance</option>
+            <option value="Insurance">Insurance</option>
+            <option value="Internet/Mobile Phone">Internet/Mobile Phone</option>
+            <option value="Productivity">Productivity</option>
+            <option value="Retail">Retail</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row-3">
+        <div class="field-group">
+          <label class="field-label">Cost (A$) <span style="color:var(--color-danger)">*</span></label>
+          <input type="number" class="field" id="fCost" placeholder="0.00" min="0" step="0.01" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Billing Cycle <span style="color:var(--color-danger)">*</span></label>
+          <select class="field" id="fCycle">
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="biannual">Every 6 Months</option>
+            <option value="annual">Annual</option>
+            <option value="weekly">Weekly</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Next Renewal <span style="color:var(--color-danger)">*</span></label>
+          <input type="date" class="field" id="fRenewal" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Notes</label>
+        <input type="text" class="field" id="fNotes" placeholder="e.g. Family plan, shared with partner" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Status</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--font-size-sm);font-weight:500;color:var(--color-text-secondary);">
+            <input type="radio" name="fStatus" value="active" checked style="accent-color:var(--color-brand-500);" /> Active
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--font-size-sm);font-weight:500;color:var(--color-warning);">
+            <input type="radio" name="fStatus" value="paused" style="accent-color:var(--color-warning);" /> ⏸ Paused
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:var(--font-size-sm);font-weight:500;color:var(--color-danger);">
+            <input type="radio" name="fStatus" value="cancelled" style="accent-color:var(--color-danger);" /> ✕ Cancelled
+          </label>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Payment Method</label>
+        <div class="payment-picker" id="paymentPicker">
+          <label class="payment-option">
+            <input type="radio" name="paymentMethod" value="AMEX" />
+            <div class="payment-tile">
+              <svg width="48" height="28" viewBox="0 0 48 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="28" rx="4" fill="#016FD0"/>
+                <text x="24" y="11" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="5.5" font-weight="700" letter-spacing="0.5">AMERICAN</text>
+                <text x="24" y="19" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="5.5" font-weight="700" letter-spacing="0.5">EXPRESS</text>
+                <text x="24" y="25.5" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="Arial,sans-serif" font-size="4" font-weight="400">AMEX</text>
+              </svg>
+              <span class="payment-tile-label">AMEX</span>
+            </div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="paymentMethod" value="VISA" />
+            <div class="payment-tile">
+              <svg width="48" height="28" viewBox="0 0 48 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="28" rx="4" fill="#1A1F71"/>
+                <text x="24" y="18" text-anchor="middle" fill="#FFFFFF" font-family="Arial,sans-serif" font-size="13" font-weight="900" font-style="italic" letter-spacing="0">VISA</text>
+              </svg>
+              <span class="payment-tile-label">Visa</span>
+            </div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="paymentMethod" value="Mastercard" />
+            <div class="payment-tile">
+              <svg width="48" height="28" viewBox="0 0 48 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="28" rx="4" fill="#252525"/>
+                <circle cx="19" cy="14" r="8" fill="#EB001B"/>
+                <circle cx="29" cy="14" r="8" fill="#F79E1B"/>
+                <path d="M24 7.53A8 8 0 0 1 29 14a8 8 0 0 1-5 6.47A8 8 0 0 1 19 14a8 8 0 0 1 5-6.47z" fill="#FF5F00"/>
+              </svg>
+              <span class="payment-tile-label">Mastercard</span>
+            </div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="paymentMethod" value="Direct Deposit" />
+            <div class="payment-tile">
+              <svg width="48" height="28" viewBox="0 0 48 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="28" rx="4" fill="#059669"/>
+                <rect x="8" y="8" width="32" height="4" rx="1" fill="rgba(255,255,255,0.9)"/>
+                <rect x="8" y="16" width="20" height="3" rx="1" fill="rgba(255,255,255,0.7)"/>
+                <rect x="32" y="16" width="8" height="3" rx="1" fill="rgba(255,255,255,0.5)"/>
+              </svg>
+              <span class="payment-tile-label">Direct Deposit</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Colour Tag</label>
+        <div class="colour-picker" id="colourPicker"></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Icon</label>
+        <div class="emoji-picker-wrap">
+          <div class="emoji-preview-row">
+            <div class="emoji-preview-swatch" id="emojiPreviewSwatch" style="background:#6366f1">
+              <span id="emojiPreviewChar"></span>
+            </div>
+            <div style="flex:1">
+              <div class="emoji-cat-tabs" id="emojiCatTabs"></div>
+            </div>
+            <button type="button" class="emoji-clear-btn" onclick="clearEmoji()" title="Clear icon">✕ Clear</button>
+          </div>
+          <div class="emoji-grid" id="emojiGrid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModals()">Cancel</button>
+      <button class="btn-save" onclick="saveSubscription()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="overlay" id="deleteOverlay">
+  <div class="confirm-modal">
+    <h3>Delete Entry?</h3>
+    <p id="deleteMsg">Are you sure you want to remove this entry? This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModals()">Cancel</button>
+      <button class="btn-destructive" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Calendar popover -->
+<div class="cal-popover" id="calPopover"></div>
+
+<!-- Onboarding overlay -->
+<div class="onboarding-overlay" id="onboardingOverlay" style="display:none;">
+  <div class="onboarding-modal">
+
+    <!-- Step 1 — Welcome -->
+    <div class="onboarding-step active" id="obStep1">
+      <div class="onboarding-badge">Welcome 👋</div>
+      <span class="onboarding-icon">💸</span>
+      <div class="onboarding-title">Welcome to SpendTracker</div>
+      <div class="onboarding-body">
+        SpendTracker helps you keep on top of all your <strong>recurring expenses</strong> — subscriptions, insurance, memberships, phone plans, and anything else that renews regularly.
+      </div>
+      <div class="onboarding-tips">
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">📋</span><span>Track every renewal date so nothing sneaks up on you</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">📅</span><span>See the whole year on the calendar — with coloured dots for each expense</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">📊</span><span>Breakdown charts show where your money is going by category and month</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">💾</span><span>Your data stays on your device — export a backup any time</span></div>
+      </div>
+      <div class="onboarding-dots">
+        <div class="onboarding-dot active"></div>
+        <div class="onboarding-dot"></div>
+        <div class="onboarding-dot"></div>
+      </div>
+      <div class="onboarding-actions">
+        <button class="onboarding-skip" onclick="closeOnboarding()">Skip</button>
+        <button class="btn-primary" onclick="obGoStep(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 — Adding an entry -->
+    <div class="onboarding-step" id="obStep2">
+      <div class="onboarding-badge">Step 1 of 2</div>
+      <span class="onboarding-icon">➕</span>
+      <div class="onboarding-title">Adding a recurring expense</div>
+      <div class="onboarding-body">
+        Tap <strong>+ Recurring Spend</strong> to add an entry. You'll fill in a few details:
+      </div>
+      <div class="onboarding-tips">
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">🏷</span><span><strong>Service name</strong> — e.g. Netflix, Car Insurance, Costco</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">💰</span><span><strong>Cost &amp; billing cycle</strong> — monthly, quarterly, every 6 months, annual, or weekly</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">📆</span><span><strong>Next renewal date</strong> — when it's next due to charge</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">💳</span><span><strong>Payment method</strong> — AMEX, Visa, Mastercard, or Direct Deposit</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">🎨</span><span><strong>Colour &amp; icon</strong> — to make it easy to spot on the calendar</span></div>
+      </div>
+      <div class="onboarding-dots">
+        <div class="onboarding-dot"></div>
+        <div class="onboarding-dot active"></div>
+        <div class="onboarding-dot"></div>
+      </div>
+      <div class="onboarding-actions">
+        <button class="onboarding-skip" onclick="closeOnboarding()">Skip</button>
+        <button class="btn-cancel" onclick="obGoStep(1)">← Back</button>
+        <button class="btn-primary" onclick="obGoStep(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 — Ready to go -->
+    <div class="onboarding-step" id="obStep3">
+      <div class="onboarding-badge">You're all set ✨</div>
+      <span class="onboarding-icon">🚀</span>
+      <div class="onboarding-title">Ready to add your first entry</div>
+      <div class="onboarding-body">
+        A few handy things to know as you get started:
+      </div>
+      <div class="onboarding-tips">
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">⏸</span><span>You can <strong>pause or cancel</strong> an entry without deleting it — useful for things that are temporarily stopped</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">↻</span><span>The <strong>renew button</strong> appears on a card when something is due — one tap advances it by one cycle</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">⧉</span><span><strong>Duplicate</strong> an entry to quickly add a similar expense</span></div>
+        <div class="onboarding-tip"><span class="onboarding-tip-icon">💾</span><span>Use <strong>Export</strong> to back up your data, and <strong>Import</strong> to restore it</span></div>
+      </div>
+      <div class="onboarding-dots">
+        <div class="onboarding-dot"></div>
+        <div class="onboarding-dot"></div>
+        <div class="onboarding-dot active"></div>
+      </div>
+      <div class="onboarding-actions">
+        <button class="btn-cancel" onclick="obGoStep(2)">← Back</button>
+        <button class="btn-primary" onclick="closeOnboardingAndAdd()">+ Add my first entry</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Hidden import input -->
+<input type="file" id="importInput" accept=".json" style="display:none;" onchange="handleImport(event)" />
+
+<script>
+  const STORAGE_KEY = 'spendtracker_cat_v1';
+  const COLOURS = [
+    '#6366f1','#818cf8','#a5b4fc','#ec4899','#f43f5e',
+    '#f97316','#eab308','#22c55e','#14b8a6','#3b82f6',
+    '#8b5cf6','#d946ef','#94a3b8','#64748b','#1e293b'
+  ];
+
+  /* ── Emoji catalogue ── */
+  const EMOJI_CATS = {
+    'Streaming':  ['📺','🎬','🎥','🎞','📽','🍿','🎭','📡','📻','🎙','📀','💿'],
+    'Music':      ['🎵','🎶','🎧','🎤','🎸','🎹','🎷','🎺','🥁','🎻','🎼','🎙'],
+    'Software':   ['💻','🖥','⌨','🖱','🖨','💾','💿','📀','🔌','🔋','📱','⌚'],
+    'Cloud':      ['☁','🌐','📡','🔒','🛡','🔐','🔑','🗝','📂','🗄','💾','🔗'],
+    'News':       ['📰','📱','📲','🗞','📖','📚','📝','✏','🖊','🖋','📄','📜'],
+    'Gaming':     ['🎮','🕹','🎲','♟','🎯','🏆','🥇','⚡','🔥','💥','👾','🎰'],
+    'Health':     ['🏃','🧘','💪','🏋','🤸','🚴','🏊','⚽','🎾','🏓','❤','🩺'],
+    'Finance':    ['💰','💳','🏦','💵','💴','💶','💷','📈','📉','💹','🏧','💲'],
+    'Insurance':  ['🛡','🏠','🚗','✈','🧳','🏥','💊','🩹','📋','📑','🤝','🔏'],
+    'Internet':   ['📶','📱','☎','🌐','💻','📡','🔌','📲','🛜','🔋','⌨','🖥'],
+    'Retail':     ['🛒','🛍','👗','👟','👠','🧴','🏪','🏬','🧺','📦','🎁','🛋'],
+    'Utility':    ['💡','🔌','💧','🔥','📞','📟','🌡','⚙','🔧','🔩','🏗','🏘'],
+    'Other':      ['⭐','❤','✅','🔔','📌','📎','🔖','🏷','💡','🎁','🧩','🌟']
+  };
+  const EMOJI_CAT_LABELS = {
+    'Streaming':'Streaming','Music':'Music','Software':'Software','Cloud':'Cloud',
+    'News':'News & Media','Gaming':'Gaming','Health':'Health','Finance':'Finance',
+    'Insurance':'Insurance','Internet':'Internet/Mobile','Retail':'Retail',
+    'Utility':'Utilities','Other':'Other'
+  };
+
+  let selectedEmoji = '';
+  let activeCat = 'Streaming';
+
+  function buildEmojiPicker(current) {
+    selectedEmoji = current || '';
+    activeCat = 'Streaming';
+    // Find which category the current emoji belongs to so we can preselect it
+    if (current) {
+      for (const [cat, emojis] of Object.entries(EMOJI_CATS)) {
+        if (emojis.includes(current)) { activeCat = cat; break; }
+      }
+    }
+    renderEmojiCatTabs();
+    renderEmojiGrid();
+    updateEmojiPreview();
+  }
+
+  function renderEmojiCatTabs() {
+    document.getElementById('emojiCatTabs').innerHTML = Object.keys(EMOJI_CATS).map(cat =>
+      `<button type="button" class="emoji-cat-btn${cat === activeCat ? ' active' : ''}"
+        onclick="setEmojiCat('${cat}')">${EMOJI_CAT_LABELS[cat]}</button>`
+    ).join('');
+  }
+
+  function setEmojiCat(cat) {
+    activeCat = cat;
+    renderEmojiCatTabs();
+    renderEmojiGrid();
+  }
+
+  function renderEmojiGrid() {
+    const emojis = EMOJI_CATS[activeCat] || [];
+    document.getElementById('emojiGrid').innerHTML = emojis.map(e =>
+      `<button type="button" class="emoji-btn${e === selectedEmoji ? ' selected' : ''}"
+        onclick="selectEmoji('${e}')" title="${e}">${e}</button>`
+    ).join('');
+  }
+
+  function selectEmoji(e) {
+    selectedEmoji = e;
+    renderEmojiGrid();
+    updateEmojiPreview();
+  }
+
+  function clearEmoji() {
+    selectedEmoji = '';
+    renderEmojiGrid();
+    updateEmojiPreview();
+  }
+
+  function updateEmojiPreview() {
+    document.getElementById('emojiPreviewChar').textContent = selectedEmoji;
+    // Sync swatch colour with current colour picker selection
+    const col = getSelectedColour();
+    document.getElementById('emojiPreviewSwatch').style.background = col;
+  }
+
+  function getEmojiValue() { return selectedEmoji; }
+
+  let subs = [];
+  let editId = null;
+  let deleteId = null;
+  let activeFilter = 'all';
+  let showAnnual = false;
+
+  /* ── Storage ── */
+  function load() {
+    try { subs = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { subs = []; }
+  }
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(subs));
+  }
+
+  /* ── Helpers ── */
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+  function monthlyCost(sub) {
+    const c = parseFloat(sub.cost) || 0;
+    if (sub.cycle === 'monthly')   return c;
+    if (sub.cycle === 'annual')    return c / 12;
+    if (sub.cycle === 'quarterly') return c / 3;
+    if (sub.cycle === 'biannual')  return c / 6;
+    if (sub.cycle === 'weekly')    return c * 4.33;
+    return c;
+  }
+
+  function annualCost(sub) { return monthlyCost(sub) * 12; }
+
+  function daysUntil(dateStr) {
+    if (!dateStr) return null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const d = new Date(dateStr); d.setHours(0,0,0,0);
+    return Math.round((d - today) / 86400000);
+  }
+
+  function renewalStatus(sub) {
+    const d = daysUntil(sub.renewal);
+    if (d === null) return 'ok';
+    if (d < 0) return 'overdue';
+    if (d <= 14) return 'soon';
+    return 'ok';
+  }
+
+  function fmtAUD(n) {
+    return 'A$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function fmtDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function renewalLabel(sub) {
+    const d = daysUntil(sub.renewal);
+    if (d === null) return '';
+    if (d < 0)  return 'Overdue by ' + Math.abs(d) + 'd';
+    if (d === 0) return 'Due today';
+    if (d === 1) return 'Due tomorrow';
+    if (d <= 14) return 'Due in ' + d + ' days';
+    return fmtDate(sub.renewal);
+  }
+
+  function cycleBadgeClass(cycle) {
+    if (cycle === 'annual') return 'badge-annual';
+    return 'badge-monthly';
+  }
+  function cycleLabel(cycle) {
+    if (cycle === 'monthly')   return 'Monthly';
+    if (cycle === 'annual')    return 'Annual';
+    if (cycle === 'quarterly') return 'Quarterly';
+    if (cycle === 'biannual')  return 'Every 6 Months';
+    if (cycle === 'weekly')    return 'Weekly';
+    return cycle;
+  }
+
+  /* ── Render header pills ── */
+  function renderHeader() {
+    const activeSubs = subs.filter(s => (s.status || 'active') === 'active');
+    const totalMo = activeSubs.reduce((a,s) => a + monthlyCost(s), 0);
+    document.getElementById('pillCount').textContent = activeSubs.length;
+    document.getElementById('pillMonthly').textContent = totalMo.toFixed(2);
+    document.getElementById('pillAnnual').textContent = (totalMo * 12).toFixed(2);
+  }
+
+  /* ── Render summary ── */
+  function renderSummary() {
+    const activeSubs = subs.filter(s => (s.status || 'active') === 'active');
+    const mo = activeSubs.reduce((a,s) => a + monthlyCost(s), 0);
+    const totalDisplay = showAnnual ? mo * 12 : mo;
+    document.getElementById('sumTotal').textContent = fmtAUD(totalDisplay);
+    document.getElementById('sumTotalSub').textContent = showAnnual ? 'per year (active only)' : 'per month (active only)';
+
+    const monthlySubs = activeSubs.filter(s => s.cycle !== 'annual');
+    const annualSubs  = activeSubs.filter(s => s.cycle === 'annual');
+    const moCost = monthlySubs.reduce((a,s) => a + monthlyCost(s), 0);
+    const anCost = annualSubs.reduce((a,s) => a + annualCost(s), 0);
+
+    document.getElementById('sumMonthlyCount').textContent = monthlySubs.length;
+    document.getElementById('sumMonthlyCost').textContent = fmtAUD(moCost) + '/mo combined';
+    document.getElementById('sumAnnualCount').textContent = annualSubs.length;
+    document.getElementById('sumAnnualCost').textContent = fmtAUD(anCost) + '/yr combined';
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const due = activeSubs.filter(s => {
+      const d = new Date(s.renewal + 'T00:00:00');
+      return d >= today && d <= endOfMonth;
+    });
+    document.getElementById('sumDueCount').textContent = due.length;
+  }
+
+  /* ── Render upcoming ── */
+  function renderUpcoming() {
+    const soon = subs.filter(s => {
+      if ((s.status || 'active') !== 'active') return false;
+      const d = daysUntil(s.renewal);
+      return d !== null && d <= 14;
+    }).sort((a,b) => new Date(a.renewal) - new Date(b.renewal));
+
+    const card = document.getElementById('upcomingCard');
+    if (!soon.length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+
+    const html = soon.map(s => {
+      const d = daysUntil(s.renewal);
+      const cls = d < 0 ? 'badge-overdue' : 'badge-soon';
+      const label = d < 0 ? 'Overdue' : (d === 0 ? 'Today' : 'In ' + d + 'd');
+      return `<div class="upcoming-item">
+        <div class="upcoming-left">
+          <span class="upcoming-dot" style="background:${s.colour||'#6366f1'}"></span>
+          <span style="font-weight:600;color:var(--color-text-body)">${esc(s.name)}</span>
+          <span class="cat-badge">${esc(s.category||'')}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:var(--font-size-sm);color:var(--color-text-secondary)">${fmtDate(s.renewal)}</span>
+          <span class="due-badge ${cls}">${label}</span>
+          <span style="font-size:var(--font-size-sm);font-weight:600;color:var(--color-text-body)">${fmtAUD(parseFloat(s.cost))} ${cycleLabel(s.cycle)}</span>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('upcomingList').innerHTML = html;
+  }
+
+  /* ── Payment badge helper ── */
+  function paymentBadgeHTML(method) {
+    if (!method) return '';
+    const icons = {
+      'AMEX': `<svg width="22" height="13" viewBox="0 0 48 28" fill="none"><rect width="48" height="28" rx="4" fill="#016FD0"/><text x="24" y="11" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="5.5" font-weight="700" letter-spacing="0.5">AMERICAN</text><text x="24" y="19" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="5.5" font-weight="700" letter-spacing="0.5">EXPRESS</text></svg>`,
+      'VISA': `<svg width="22" height="13" viewBox="0 0 48 28" fill="none"><rect width="48" height="28" rx="4" fill="#1A1F71"/><text x="24" y="18" text-anchor="middle" fill="#FFFFFF" font-family="Arial,sans-serif" font-size="13" font-weight="900" font-style="italic">VISA</text></svg>`,
+      'Mastercard': `<svg width="22" height="13" viewBox="0 0 48 28" fill="none"><rect width="48" height="28" rx="4" fill="#252525"/><circle cx="19" cy="14" r="8" fill="#EB001B"/><circle cx="29" cy="14" r="8" fill="#F79E1B"/><path d="M24 7.53A8 8 0 0 1 29 14a8 8 0 0 1-5 6.47A8 8 0 0 1 19 14a8 8 0 0 1 5-6.47z" fill="#FF5F00"/></svg>`,
+      'Direct Deposit': `<svg width="22" height="13" viewBox="0 0 48 28" fill="none"><rect width="48" height="28" rx="4" fill="#059669"/><rect x="8" y="8" width="32" height="4" rx="1" fill="rgba(255,255,255,0.9)"/><rect x="8" y="16" width="20" height="3" rx="1" fill="rgba(255,255,255,0.7)"/><rect x="32" y="16" width="8" height="3" rx="1" fill="rgba(255,255,255,0.5)"/></svg>`
+    };
+    const icon = icons[method] || '';
+    return `<span class="payment-badge">${icon} ${esc(method)}</span>`;
+  }
+
+  /* ── Render list ── */
+  function renderList() {
+    const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+    let filtered = [...subs];
+
+    // Status filter
+    if (activeFilter === 'active')    filtered = filtered.filter(s => (s.status||'active') === 'active');
+    else if (activeFilter === 'paused')    filtered = filtered.filter(s => s.status === 'paused');
+    else if (activeFilter === 'cancelled') filtered = filtered.filter(s => s.status === 'cancelled');
+    else if (activeFilter === 'overdue')   filtered = filtered.filter(s => (s.status||'active') === 'active' && renewalStatus(s) === 'overdue');
+    else if (activeFilter === 'soon')      filtered = filtered.filter(s => (s.status||'active') === 'active' && renewalStatus(s) === 'soon');
+    else if (activeFilter === 'monthly')   filtered = filtered.filter(s => (s.status||'active') === 'active' && s.cycle !== 'annual');
+    else if (activeFilter === 'annual')    filtered = filtered.filter(s => (s.status||'active') === 'active' && s.cycle === 'annual');
+    // 'all' shows everything
+
+    // Search filter
+    if (query) {
+      filtered = filtered.filter(s =>
+        s.name.toLowerCase().includes(query) ||
+        (s.category||'').toLowerCase().includes(query) ||
+        (s.notes||'').toLowerCase().includes(query)
+      );
+    }
+
+    const sort = document.getElementById('sortSelect').value;
+    if (sort === 'name')       filtered.sort((a,b) => a.name.localeCompare(b.name));
+    else if (sort === 'cost-high') filtered.sort((a,b) => monthlyCost(b) - monthlyCost(a));
+    else if (sort === 'cost-low')  filtered.sort((a,b) => monthlyCost(a) - monthlyCost(b));
+    else filtered.sort((a,b) => {
+      const da = a.renewal ? new Date(a.renewal) : new Date('9999-01-01');
+      const db = b.renewal ? new Date(b.renewal) : new Date('9999-01-01');
+      return da - db;
+    });
+
+    const list = document.getElementById('subList');
+    if (!filtered.length) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div>${subs.length ? 'No entries match this filter.' : 'No recurring spend added yet.'}</div>
+        ${!subs.length ? '<div class="empty-hint">Click <strong>+ Recurring Spend</strong> to get started.</div>' : ''}
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(s => {
+      const entryStatus = s.status || 'active';
+      const renewSt = renewalStatus(s);
+      const cardCls = entryStatus !== 'active' ? entryStatus :
+        (renewSt === 'overdue' ? 'overdue' : renewSt === 'soon' ? 'due-soon' : 'due-ok');
+      const badgeCls = entryStatus !== 'active' ? '' :
+        (renewSt === 'overdue' ? 'badge-overdue' : renewSt === 'soon' ? 'badge-soon' : 'badge-ok');
+      const renewLabel = entryStatus !== 'active' ? '' : renewalLabel(s);
+      const costMo = monthlyCost(s);
+      const costDisplay = showAnnual ? fmtAUD(costMo * 12) + '/yr' : fmtAUD(costMo) + '/mo';
+      const actualCost = fmtAUD(parseFloat(s.cost));
+      const cycleDisp = s.cycle === 'monthly' ? '/mo' : s.cycle === 'annual' ? '/yr' : s.cycle === 'quarterly' ? '/qtr' : s.cycle === 'biannual' ? '/6mo' : '/wk';
+
+      const statusBadge = entryStatus === 'paused'
+        ? `<span class="due-badge badge-paused">⏸ Paused</span>`
+        : entryStatus === 'cancelled'
+        ? `<span class="due-badge badge-cancelled">✕ Cancelled</span>`
+        : '';
+
+      const pauseBtn = entryStatus === 'active'
+        ? `<button class="btn-icon btn-icon-warning" onclick="quickPause('${s.id}')" title="Pause">⏸</button>`
+        : entryStatus === 'paused'
+        ? `<button class="btn-icon btn-icon-success" onclick="quickResume('${s.id}')" title="Resume">▶</button>`
+        : '';
+      const renewBtn = entryStatus === 'active' && (renewSt === 'overdue' || renewSt === 'soon' || daysUntil(s.renewal) === 0)
+        ? `<button class="btn-icon btn-icon-success" onclick="renewToday('${s.id}')" title="Mark as renewed — advance to next cycle">↻</button>`
+        : '';
+      const dupeBtn = `<button class="btn-icon btn-icon-info" onclick="duplicateEntry('${s.id}')" title="Duplicate">⧉</button>`;
+
+      return `<div class="sub-card ${cardCls}">
+        <div class="sub-swatch" style="background:${s.colour||'#6366f1'}">${s.emoji||''}</div>
+        <div class="sub-info">
+          <div class="sub-name">${esc(s.name)}</div>
+          <div class="sub-meta" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px;">
+            <span class="cat-badge">${esc(s.category||'')}</span>
+            ${paymentBadgeHTML(s.paymentMethod)}
+            ${s.notes ? `<span style="font-size:var(--font-size-xs);color:var(--color-text-muted)">${esc(s.notes)}</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-right:8px;">
+          ${statusBadge}
+          ${renewLabel ? `<span class="due-badge ${badgeCls}">${renewLabel}</span>` : ''}
+          <span class="due-badge ${cycleBadgeClass(s.cycle)}">${cycleLabel(s.cycle)}</span>
+        </div>
+        <div class="sub-right">
+          <div class="sub-cost">${actualCost}${cycleDisp}</div>
+          <div class="sub-cost-per">${entryStatus === 'active' ? costDisplay + ' equiv.' : '—'}</div>
+        </div>
+        <div class="sub-actions">
+          ${renewBtn}
+          ${pauseBtn}
+          ${dupeBtn}
+          <button class="btn-icon" onclick="openEditModal('${s.id}')" title="Edit">✎</button>
+          <button class="btn-icon btn-icon-danger" onclick="openDeleteModal('${s.id}')" title="Delete">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderAll() {
+    renderHeader();
+    renderSummary();
+    renderUpcoming();
+    renderList();
+    if (activeTab === 'calendar') renderCalendar();
+    if (activeTab === 'chart') renderChart();
+  }
+
+  /* ── Tab switching ── */
+  let activeTab = 'list';
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('tabList').style.display     = tab === 'list'     ? '' : 'none';
+    document.getElementById('tabCalendar').style.display = tab === 'calendar' ? '' : 'none';
+    document.getElementById('tabChart').style.display    = tab === 'chart'    ? '' : 'none';
+    document.getElementById('tabBtnList').classList.toggle('active',  tab === 'list');
+    document.getElementById('tabBtnCal').classList.toggle('active',   tab === 'calendar');
+    document.getElementById('tabBtnChart').classList.toggle('active', tab === 'chart');
+    if (tab === 'calendar') renderCalendar();
+    if (tab === 'chart')    renderChart();
+  }
+
+  /* ── Chart ── */
+  let chartType = 'pie';
+  let chartShowAnnual = false;
+  let chartViewMode = 'category'; // 'category' | 'monthly'
+
+  function setChartType(type) {
+    chartType = type;
+    document.getElementById('chartTypePie').classList.toggle('active', type === 'pie');
+    document.getElementById('chartTypeBar').classList.toggle('active', type === 'bar');
+    renderChart();
+  }
+
+  function setChartView(view) {
+    chartViewMode = view;
+    document.getElementById('chartViewCat').classList.toggle('active', view === 'category');
+    document.getElementById('chartViewMo').classList.toggle('active',  view === 'monthly');
+    // Hide the monthly/annual toggle when in monthly view — it's not relevant
+    document.getElementById('chartCostToggleWrap').style.display = view === 'monthly' ? 'none' : '';
+    document.getElementById('chartSectionLabel').textContent = view === 'monthly' ? 'Spend by Month' : 'Spend by Category';
+    renderChart();
+  }
+
+  function toggleChartView() {
+    chartShowAnnual = !chartShowAnnual;
+    const t = document.getElementById('chartCostToggle');
+    t.classList.toggle('on', chartShowAnnual);
+    document.getElementById('chartLblMo').classList.toggle('active', !chartShowAnnual);
+    document.getElementById('chartLblAn').classList.toggle('active', chartShowAnnual);
+    renderChart();
+  }
+
+  function renderChart() {
+    if (chartViewMode === 'monthly') {
+      renderMonthlyChart();
+    } else {
+      renderCategoryChart();
+    }
+  }
+
+  /* ── Monthly chart — project each active entry across all 12 months of calYear ── */
+  function renderMonthlyChart() {
+    const area = document.getElementById('chartArea');
+    if (!area) return;
+    const activeSubs = subs.filter(s => (s.status || 'active') === 'active');
+
+    if (!activeSubs.length) {
+      area.innerHTML = '<div class="chart-empty">No active entries to display.</div>';
+      return;
+    }
+
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const year = calYear;
+
+    // For each month, sum the cost of entries that have a renewal occurring in that month
+    // Entries billed monthly/weekly contribute every month; annual/quarterly/biannual only in their renewal months
+    const monthTotals = Array(12).fill(0);
+    const monthEntries = Array.from({length:12}, () => []); // entries per month for tooltip
+
+    activeSubs.forEach(sub => {
+      const occurrences = getOccurrencesInYear(sub, year);
+      occurrences.forEach(d => {
+        const mo = d.getMonth();
+        monthTotals[mo] += parseFloat(sub.cost) || 0;
+        monthEntries[mo].push(sub);
+      });
+    });
+
+    const maxVal = Math.max(...monthTotals, 0.01);
+    const total = monthTotals.reduce((a,v) => a + v, 0);
+
+    // Use a consistent indigo palette across months — shade varies by value
+    const BASE_COL = '#6366f1';
+    const LOW_COL  = '#a5b4fc';
+
+    if (chartType === 'pie') {
+      // Only include months that have spend
+      const activeMos = MONTHS.map((m,i) => ({ label: m, val: monthTotals[i], idx: i }))
+        .filter(m => m.val > 0);
+
+      if (!activeMos.length) {
+        area.innerHTML = '<div class="chart-empty">No spend falls in ' + year + ' for active entries.</div>';
+        return;
+      }
+
+      // Generate a colour per month using the brand indigo ramp
+      const PIE_COLS = [
+        '#6366f1','#818cf8','#a5b4fc','#4f46e5','#7c3aed',
+        '#8b5cf6','#c4b5fd','#e879f9','#d946ef','#f0abfc',
+        '#38bdf8','#0ea5e9'
+      ];
+
+      area.innerHTML = `<div class="chart-container">
+        <div class="chart-canvas-wrap"><canvas id="chartCanvas" width="220" height="220"></canvas></div>
+        <div class="chart-breakdown-list" id="chartBreakdown"></div>
+      </div>`;
+
+      const canvas = document.getElementById('chartCanvas');
+      const ctx = canvas.getContext('2d');
+      const cx = canvas.width / 2, cy = canvas.height / 2, r = Math.min(cx,cy) - 6;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let startAngle = -Math.PI / 2;
+      activeMos.forEach((m, i) => {
+        const slice = (m.val / total) * 2 * Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, startAngle + slice);
+        ctx.closePath();
+        ctx.fillStyle = PIE_COLS[m.idx % PIE_COLS.length];
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        startAngle += slice;
+      });
+
+      // Donut hole
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.52, 0, 2 * Math.PI);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      // Centre text
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(year.toString(), cx, cy - 10);
+      ctx.font = 'bold 13px Inter, sans-serif';
+      ctx.fillText(fmtAUD(total), cx, cy + 6);
+      ctx.font = '10px Inter, sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText('total spend', cx, cy + 22);
+
+      // Breakdown list
+      const maxMoVal = Math.max(...activeMos.map(m => m.val));
+      document.getElementById('chartBreakdown').innerHTML = activeMos.map((m, i) => {
+        const pct = total > 0 ? ((m.val / total) * 100).toFixed(1) : '0.0';
+        const barW = maxMoVal > 0 ? ((m.val / maxMoVal) * 100).toFixed(1) : '0';
+        const col = PIE_COLS[m.idx % PIE_COLS.length];
+        return `<div class="chart-breakdown-row">
+          <span class="chart-breakdown-dot" style="background:${col}"></span>
+          <span class="chart-breakdown-label">${m.label} ${year}</span>
+          <div class="chart-breakdown-bar-wrap">
+            <div class="chart-breakdown-bar" style="width:${barW}%;background:${col}"></div>
+          </div>
+          <span class="chart-breakdown-cost">${fmtAUD(m.val)}</span>
+          <span style="font-size:10px;color:var(--color-text-muted);min-width:36px;text-align:right">${pct}%</span>
+        </div>`;
+      }).join('');
+
+    } else {
+      // Vertical bar chart — one bar per month across the full year
+      const BAR_W = 36, GAP = 8, PAD_L = 16, PAD_R = 16, PAD_T = 20, PAD_B = 40;
+      const canvasW = 12 * (BAR_W + GAP) + PAD_L + PAD_R;
+      const canvasH = 220;
+      const availH = canvasH - PAD_T - PAD_B;
+
+      area.innerHTML = `<div style="overflow-x:auto;">
+        <canvas id="chartCanvas" width="${canvasW}" height="${canvasH}" style="max-width:100%;height:auto;min-width:360px;"></canvas>
+      </div>`;
+
+      const canvas = document.getElementById('chartCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvasW, canvasH);
+
+      const today = new Date();
+      const currentMo = today.getFullYear() === year ? today.getMonth() : -1;
+
+      MONTHS.forEach((mo, i) => {
+        const val = monthTotals[i];
+        const x = PAD_L + i * (BAR_W + GAP);
+        const barH = maxVal > 0 ? (val / maxVal) * availH : 0;
+        const y = PAD_T + availH - barH;
+
+        // Track (empty bar background)
+        ctx.fillStyle = '#f1f5f9';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(x, PAD_T, BAR_W, availH, 4);
+        else ctx.rect(x, PAD_T, BAR_W, availH);
+        ctx.fill();
+
+        // Filled bar
+        if (barH > 0) {
+          // Current month gets brand-500, others get a lighter shade
+          ctx.fillStyle = i === currentMo ? '#6366f1' : (val === maxVal ? '#4f46e5' : '#a5b4fc');
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(x, y, BAR_W, barH, 4);
+          else ctx.rect(x, y, barH > 4 ? BAR_W : BAR_W, barH);
+          ctx.fill();
+        }
+
+        // Month label below
+        ctx.fillStyle = i === currentMo ? '#6366f1' : '#94a3b8';
+        ctx.font = i === currentMo ? 'bold 10px Inter, sans-serif' : '10px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(mo, x + BAR_W / 2, canvasH - PAD_B + 6);
+
+        // Value above bar (only if bar tall enough or has value)
+        if (val > 0) {
+          const shortVal = val >= 1000 ? '$' + (val/1000).toFixed(1) + 'k' : '$' + val.toFixed(0);
+          ctx.fillStyle = '#64748b';
+          ctx.font = '9px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(shortVal, x + BAR_W / 2, y - 2);
+        }
+      });
+
+      // Year label
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(year.toString(), PAD_L, canvasH - PAD_B + 20);
+
+      // Total label right
+      ctx.textAlign = 'right';
+      ctx.fillText('Total: ' + fmtAUD(total), canvasW - PAD_R, canvasH - PAD_B + 20);
+    }
+  }
+
+  /* ── Category chart (existing logic, extracted) ── */
+  function renderCategoryChart() {
+    const area = document.getElementById('chartArea');
+    if (!area) return;
+    const activeSubs = subs.filter(s => (s.status || 'active') === 'active');
+
+    if (!activeSubs.length) {
+      area.innerHTML = '<div class="chart-empty">No active entries to display.</div>';
+      return;
+    }
+
+    const catMap = {};
+    const catColour = {};
+    activeSubs.forEach(s => {
+      const cat = s.category || 'Other';
+      const cost = chartShowAnnual ? annualCost(s) : monthlyCost(s);
+      catMap[cat] = (catMap[cat] || 0) + cost;
+      if (!catColour[cat]) catColour[cat] = s.colour || '#6366f1';
+    });
+
+    const cats = Object.keys(catMap).sort((a,b) => catMap[b] - catMap[a]);
+    const vals = cats.map(c => catMap[c]);
+    const cols = cats.map(c => catColour[c]);
+    const total = vals.reduce((a,v) => a + v, 0);
+    const label = chartShowAnnual ? '/yr' : '/mo';
+
+    if (chartType === 'pie') {
+      area.innerHTML = `<div class="chart-container">
+        <div class="chart-canvas-wrap"><canvas id="chartCanvas" width="220" height="220"></canvas></div>
+        <div class="chart-breakdown-list" id="chartBreakdown"></div>
+      </div>`;
+
+      const canvas = document.getElementById('chartCanvas');
+      const ctx = canvas.getContext('2d');
+      const cx = canvas.width / 2, cy = canvas.height / 2, r = Math.min(cx, cy) - 6;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let startAngle = -Math.PI / 2;
+      vals.forEach((v, i) => {
+        const slice = (v / total) * 2 * Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, startAngle + slice);
+        ctx.closePath();
+        ctx.fillStyle = cols[i];
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        startAngle += slice;
+      });
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.52, 0, 2 * Math.PI);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Total', cx, cy - 10);
+      ctx.font = 'bold 13px Inter, sans-serif';
+      ctx.fillText(fmtAUD(total), cx, cy + 6);
+      ctx.font = '10px Inter, sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(label, cx, cy + 22);
+
+      const maxVal = vals[0];
+      document.getElementById('chartBreakdown').innerHTML = cats.map((cat, i) => {
+        const pct = total > 0 ? ((vals[i] / total) * 100).toFixed(1) : '0.0';
+        const barW = maxVal > 0 ? ((vals[i] / maxVal) * 100).toFixed(1) : '0';
+        return `<div class="chart-breakdown-row">
+          <span class="chart-breakdown-dot" style="background:${cols[i]}"></span>
+          <span class="chart-breakdown-label">${esc(cat)}</span>
+          <div class="chart-breakdown-bar-wrap">
+            <div class="chart-breakdown-bar" style="width:${barW}%;background:${cols[i]}"></div>
+          </div>
+          <span class="chart-breakdown-cost">${fmtAUD(vals[i])}${label}</span>
+          <span style="font-size:10px;color:var(--color-text-muted);min-width:36px;text-align:right">${pct}%</span>
+        </div>`;
+      }).join('');
+
+    } else {
+      const BAR_H = 32, GAP = 8, PAD_L = 110, PAD_R = 16, PAD_T = 12, PAD_B = 12;
+      const canvasH = cats.length * (BAR_H + GAP) + PAD_T + PAD_B;
+      const canvasW = 500;
+
+      area.innerHTML = `<div style="overflow-x:auto;">
+        <canvas id="chartCanvas" width="${canvasW}" height="${canvasH}" style="max-width:100%;height:auto;"></canvas>
+      </div>`;
+
+      const canvas = document.getElementById('chartCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvasW, canvasH);
+
+      const maxVal = vals[0];
+      const availW = canvasW - PAD_L - PAD_R;
+
+      cats.forEach((cat, i) => {
+        const y = PAD_T + i * (BAR_H + GAP);
+        const barW = maxVal > 0 ? (vals[i] / maxVal) * availW : 0;
+
+        ctx.fillStyle = '#f1f5f9';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(PAD_L, y, availW, BAR_H, 4);
+        else ctx.rect(PAD_L, y, availW, BAR_H);
+        ctx.fill();
+
+        if (barW > 0) {
+          ctx.fillStyle = cols[i];
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(PAD_L, y, barW, BAR_H, 4);
+          else ctx.rect(PAD_L, y, barW, BAR_H);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        const shortCat = cat.length > 15 ? cat.slice(0,14) + '…' : cat;
+        ctx.fillText(shortCat, PAD_L - 8, y + BAR_H / 2);
+
+        const valStr = fmtAUD(vals[i]) + label;
+        ctx.font = 'bold 11px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        if (barW > 100) {
+          ctx.fillStyle = '#fff';
+          ctx.fillText(valStr, PAD_L + 8, y + BAR_H / 2);
+        } else {
+          ctx.fillStyle = '#64748b';
+          ctx.fillText(valStr, PAD_L + barW + 6, y + BAR_H / 2);
+        }
+      });
+    }
+  }
+
+  /* ── Calendar ── */
+  let calYear = new Date().getFullYear();
+
+  function calChangeYear(delta) {
+    calYear += delta;
+    renderCalendar();
+  }
+
+  function getOccurrencesInYear(sub, year) {
+    if (!sub.renewal) return [];
+    const anchor = new Date(sub.renewal + 'T00:00:00');
+    const dates = [];
+    const startOfYear = new Date(year, 0, 1);
+    const endOfYear   = new Date(year, 11, 31);
+
+    if (sub.cycle === 'annual') {
+      const d = new Date(anchor);
+      d.setFullYear(year);
+      if (d >= startOfYear && d <= endOfYear) dates.push(new Date(d));
+    } else if (sub.cycle === 'monthly') {
+      for (let m = 0; m < 12; m++) {
+        const day = anchor.getDate();
+        const last = new Date(year, m + 1, 0).getDate();
+        const d = new Date(year, m, Math.min(day, last));
+        if (d >= startOfYear && d <= endOfYear) dates.push(d);
+      }
+    } else if (sub.cycle === 'quarterly') {
+      for (let q = 0; q < 4; q++) {
+        const base = new Date(anchor);
+        let m = anchor.getMonth() + q * 3;
+        const y = year + Math.floor(m / 12);
+        m = m % 12;
+        const day = anchor.getDate();
+        const last = new Date(y, m + 1, 0).getDate();
+        const d = new Date(y, m, Math.min(day, last));
+        if (d.getFullYear() === year && d >= startOfYear && d <= endOfYear) dates.push(d);
+      }
+    } else if (sub.cycle === 'biannual') {
+      for (let h = 0; h < 2; h++) {
+        let m = anchor.getMonth() + h * 6;
+        const y = year + Math.floor(m / 12);
+        m = m % 12;
+        const day = anchor.getDate();
+        const last = new Date(y, m + 1, 0).getDate();
+        const d = new Date(y, m, Math.min(day, last));
+        if (d.getFullYear() === year && d >= startOfYear && d <= endOfYear) dates.push(d);
+      }
+    } else if (sub.cycle === 'weekly') {
+      const d = new Date(anchor);
+      while (d.getFullYear() < year) d.setDate(d.getDate() + 7);
+      while (d.getFullYear() === year) {
+        dates.push(new Date(d));
+        d.setDate(d.getDate() + 7);
+      }
+    }
+    return dates;
+  }
+
+  function renderCalendar() {
+    document.getElementById('calYearLabel').textContent = calYear;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const DOW = ['M','T','W','T','F','S','S'];
+
+    // Build a map: 'YYYY-MM-DD' -> [sub, ...]
+    const dayMap = {};
+    subs.forEach(sub => {
+      getOccurrencesInYear(sub, calYear).forEach(d => {
+        const key = d.toISOString().slice(0,10);
+        if (!dayMap[key]) dayMap[key] = [];
+        dayMap[key].push(sub);
+      });
+    });
+
+    const grid = document.getElementById('calGrid');
+    let html = '';
+
+    for (let mo = 0; mo < 12; mo++) {
+      const firstDay = new Date(calYear, mo, 1);
+      const daysInMonth = new Date(calYear, mo + 1, 0).getDate();
+      // Monday-first: 0=Mon ... 6=Sun
+      let startDow = firstDay.getDay(); // 0=Sun
+      startDow = (startDow + 6) % 7;   // convert to Mon=0
+
+      html += `<div class="cal-month">`;
+      html += `<div class="cal-month-name">${MONTHS[mo]}</div>`;
+      html += `<div class="cal-dow-row">${DOW.map(d => `<div class="cal-dow">${d}</div>`).join('')}</div>`;
+      html += `<div class="cal-days">`;
+
+      // Leading empty cells
+      for (let e = 0; e < startDow; e++) {
+        html += `<div class="cal-day other-month"><span class="cal-day-num"></span></div>`;
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${calYear}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const isToday = (new Date(calYear, mo, day).getTime() === today.getTime());
+        const entries = dayMap[dateStr] || [];
+        const hasSpend = entries.length > 0;
+
+        const dots = entries.slice(0,5).map(s =>
+          `<div class="cal-dot" style="background:${s.colour||'#6366f1'}"></div>`
+        ).join('');
+
+        const todayCls = isToday ? ' today' : '';
+        const spendCls = hasSpend ? ' has-spend' : '';
+        const dataAttr = hasSpend ? ` data-date="${dateStr}"` : '';
+
+        html += `<div class="cal-day${todayCls}${spendCls}"${dataAttr} ${hasSpend ? `onmouseenter="showCalPopover(event,'${dateStr}')" onmouseleave="hideCalPopover()" onclick="calDayClick('${dateStr}')"` : ''}>`;
+        html += `<span class="cal-day-num">${day}</span>`;
+        if (dots) html += `<div class="cal-dots">${dots}</div>`;
+        html += `</div>`;
+      }
+
+      html += `</div></div>`;
+    }
+
+    grid.innerHTML = html;
+
+    // Legend
+    const legend = document.getElementById('calLegend');
+    if (!subs.length) { legend.innerHTML = ''; return; }
+    legend.innerHTML = subs.map(s =>
+      `<div class="cal-legend-item" onclick="switchTab('list');setTimeout(()=>scrollToSub('${s.id}'),80)" title="Jump to ${esc(s.name)}">
+        <span class="cal-legend-dot" style="background:${s.colour||'#6366f1'}"></span>
+        <span class="cal-legend-name">${esc(s.name)}</span>
+        <span style="font-size:10px;color:var(--color-text-muted);margin-left:2px;">${esc(s.category||'')}</span>
+      </div>`
+    ).join('');
+  }
+
+  /* ── Calendar popover ── */
+  function showCalPopover(e, dateStr) {
+    const entries = [];
+    subs.forEach(sub => {
+      getOccurrencesInYear(sub, calYear).forEach(d => {
+        if (d.toISOString().slice(0,10) === dateStr) entries.push(sub);
+      });
+    });
+    if (!entries.length) return;
+
+    const pop = document.getElementById('calPopover');
+    const d = new Date(dateStr + 'T00:00:00');
+    const label = d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+    pop.innerHTML = `<div class="cal-popover-date">${label}</div>` +
+      entries.map(s => {
+        const cycleDisp = s.cycle === 'monthly' ? '/mo' : s.cycle === 'annual' ? '/yr' : s.cycle === 'quarterly' ? '/qtr' : s.cycle === 'biannual' ? '/6mo' : '/wk';
+        return `<div class="cal-popover-item" onclick="switchTab('list');setTimeout(()=>scrollToSub('${s.id}'),80)">
+          <span class="cal-popover-dot" style="background:${s.colour||'#6366f1'}"></span>
+          <span class="cal-popover-name">${esc(s.name)}</span>
+          <span class="cal-popover-cost">${fmtAUD(parseFloat(s.cost))}${cycleDisp}</span>
+        </div>`;
+      }).join('');
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    pop.style.left = Math.min(rect.left, window.innerWidth - 280) + 'px';
+    pop.style.top  = (rect.bottom + 6) + 'px';
+    pop.classList.add('visible');
+  }
+
+  function hideCalPopover() {
+    document.getElementById('calPopover').classList.remove('visible');
+  }
+
+  function calDayClick(dateStr) {
+    hideCalPopover();
+    switchTab('list');
+    setTimeout(() => {
+      const entries = [];
+      subs.forEach(sub => {
+        getOccurrencesInYear(sub, calYear).forEach(d => {
+          if (d.toISOString().slice(0,10) === dateStr) entries.push(sub);
+        });
+      });
+      if (entries.length) scrollToSub(entries[0].id);
+    }, 80);
+  }
+
+  function scrollToSub(id) {
+    // Highlight and scroll to the card in the list
+    const cards = document.querySelectorAll('.sub-card');
+    cards.forEach(card => card.style.outline = '');
+    // Find by matching edit button onclick attribute
+    const target = [...cards].find(card => {
+      const btn = card.querySelector('.btn-icon');
+      return btn && btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(id);
+    });
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.style.outline = '3px solid ' + 'var(--color-brand-500)';
+      target.style.outlineOffset = '2px';
+      setTimeout(() => { target.style.outline = ''; target.style.outlineOffset = ''; }, 2000);
+    }
+  }
+
+  /* ── Cost toggle ── */
+  function toggleCostView() {
+    showAnnual = !showAnnual;
+    const t = document.getElementById('costToggle');
+    t.classList.toggle('on', showAnnual);
+    document.getElementById('lblMonthly').classList.toggle('active', !showAnnual);
+    document.getElementById('lblAnnual').classList.toggle('active', showAnnual);
+    renderSummary();
+    renderList();
+  }
+
+  /* ── Filter ── */
+  function setFilter(el, filter) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderList();
+  }
+
+  /* ── Colour picker ── */
+  function buildColourPicker(selected) {
+    document.getElementById('colourPicker').innerHTML = COLOURS.map(c =>
+      `<div class="colour-swatch${c === selected ? ' selected' : ''}" style="background:${c}" data-colour="${c}" onclick="selectColour(this,'${c}')"></div>`
+    ).join('');
+  }
+  function selectColour(el, colour) {
+    document.querySelectorAll('#colourPicker .colour-swatch').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    updateEmojiPreview();
+  }
+  function getSelectedColour() {
+    const s = document.querySelector('#colourPicker .colour-swatch.selected');
+    return s ? s.dataset.colour : COLOURS[0];
+  }
+
+  /* ── Modals ── */
+  function openAddModal() {
+    editId = null;
+    document.getElementById('modalTitle').textContent = 'Add Recurring Spend';
+    document.getElementById('fName').value = '';
+    document.getElementById('fCost').value = '';
+    document.getElementById('fCycle').value = 'monthly';
+    document.getElementById('fCategory').value = 'Streaming';
+    document.getElementById('fNotes').value = '';
+    document.querySelectorAll('input[name="paymentMethod"]').forEach(r => r.checked = false);
+    document.querySelectorAll('input[name="fStatus"]').forEach(r => r.checked = r.value === 'active');
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 30);
+    document.getElementById('fRenewal').value = tomorrow.toISOString().split('T')[0];
+    buildColourPicker(COLOURS[0]);
+    buildEmojiPicker('');
+    document.getElementById('formOverlay').classList.add('open');
+    document.getElementById('fName').focus();
+  }
+
+  function openEditModal(id) {
+    const s = subs.find(x => x.id === id);
+    if (!s) return;
+    editId = id;
+    document.getElementById('modalTitle').textContent = 'Edit Recurring Spend';
+    document.getElementById('fName').value = s.name;
+    document.getElementById('fCost').value = s.cost;
+    document.getElementById('fCycle').value = s.cycle;
+    document.getElementById('fCategory').value = s.category || 'Other';
+    document.getElementById('fNotes').value = s.notes || '';
+    document.getElementById('fRenewal').value = s.renewal || '';
+    document.querySelectorAll('input[name="paymentMethod"]').forEach(r => {
+      r.checked = r.value === (s.paymentMethod || '');
+    });
+    document.querySelectorAll('input[name="fStatus"]').forEach(r => {
+      r.checked = r.value === (s.status || 'active');
+    });
+    buildColourPicker(s.colour || COLOURS[0]);
+    buildEmojiPicker(s.emoji || '');
+    document.getElementById('formOverlay').classList.add('open');
+    document.getElementById('fName').focus();
+  }
+
+  function openDeleteModal(id) {
+    const s = subs.find(x => x.id === id);
+    if (!s) return;
+    deleteId = id;
+    document.getElementById('deleteMsg').innerHTML =
+      `Are you sure you want to remove <strong>${esc(s.name)}</strong>? This cannot be undone.`;
+    document.getElementById('deleteOverlay').classList.add('open');
+  }
+
+  function closeModals() {
+    document.getElementById('formOverlay').classList.remove('open');
+    document.getElementById('deleteOverlay').classList.remove('open');
+    editId = null; deleteId = null;
+  }
+
+  /* ── Save ── */
+  function saveSubscription() {
+    const name    = document.getElementById('fName').value.trim();
+    const cost    = document.getElementById('fCost').value;
+    const cycle   = document.getElementById('fCycle').value;
+    const renewal = document.getElementById('fRenewal').value;
+    const category = document.getElementById('fCategory').value;
+    const notes   = document.getElementById('fNotes').value.trim();
+    const emoji   = getEmojiValue();
+    const colour  = getSelectedColour();
+    const paymentMethodEl = document.querySelector('input[name="paymentMethod"]:checked');
+    const paymentMethod = paymentMethodEl ? paymentMethodEl.value : '';
+    const statusEl = document.querySelector('input[name="fStatus"]:checked');
+    const status = statusEl ? statusEl.value : 'active';
+
+    if (!name) { document.getElementById('fName').focus(); showToast('⚠ Please enter a service name.'); return; }
+    if (!cost || isNaN(cost) || parseFloat(cost) < 0) { document.getElementById('fCost').focus(); showToast('⚠ Please enter a valid cost.'); return; }
+    if (!renewal) { document.getElementById('fRenewal').focus(); showToast('⚠ Please select a renewal date.'); return; }
+
+    if (editId) {
+      const idx = subs.findIndex(x => x.id === editId);
+      if (idx >= 0) subs[idx] = { ...subs[idx], name, cost: parseFloat(cost), cycle, renewal, category, notes, emoji, colour, paymentMethod, status };
+      showToast('✓ Entry updated.');
+    } else {
+      subs.push({ id: uid(), name, cost: parseFloat(cost), cycle, renewal, category, notes, emoji, colour, paymentMethod, status });
+      showToast('✓ Entry added.');
+    }
+    save(); closeModals(); renderAll();
+  }
+
+  /* ── Delete ── */
+  function confirmDelete() {
+    if (!deleteId) return;
+    const s = subs.find(x => x.id === deleteId);
+    subs = subs.filter(x => x.id !== deleteId);
+    save(); closeModals(); renderAll();
+    showToast('✓ ' + (s ? esc(s.name) : 'Entry') + ' deleted.');
+  }
+
+  /* ── Quick pause / resume ── */
+  function quickPause(id) {
+    const idx = subs.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    subs[idx].status = 'paused';
+    save(); renderAll();
+    showToast('⏸ ' + esc(subs[idx].name) + ' paused.');
+  }
+
+  function quickResume(id) {
+    const idx = subs.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    subs[idx].status = 'active';
+    save(); renderAll();
+    showToast('▶ ' + esc(subs[idx].name) + ' resumed.');
+  }
+
+  /* ── Renew today — advance renewal date by one cycle ── */
+  function renewToday(id) {
+    const idx = subs.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    const s = subs[idx];
+    if (!s.renewal) return;
+
+    const current = new Date(s.renewal + 'T00:00:00');
+    let next = new Date(current);
+
+    if (s.cycle === 'monthly') {
+      next.setMonth(next.getMonth() + 1);
+    } else if (s.cycle === 'annual') {
+      next.setFullYear(next.getFullYear() + 1);
+    } else if (s.cycle === 'quarterly') {
+      next.setMonth(next.getMonth() + 3);
+    } else if (s.cycle === 'biannual') {
+      next.setMonth(next.getMonth() + 6);
+    } else if (s.cycle === 'weekly') {
+      next.setDate(next.getDate() + 7);
+    }
+
+    subs[idx].renewal = next.toISOString().slice(0, 10);
+    save(); renderAll();
+    showToast('↻ ' + esc(s.name) + ' renewed — next due ' + fmtDate(subs[idx].renewal) + '.');
+  }
+
+  /* ── Duplicate entry ── */
+  function duplicateEntry(id) {
+    const s = subs.find(x => x.id === id);
+    if (!s) return;
+    const copy = { ...s, id: uid(), name: s.name + ' (copy)' };
+    subs.push(copy);
+    save(); renderAll();
+    showToast('⧉ ' + esc(s.name) + ' duplicated.');
+  }
+
+  /* ── Export ── */
+  function exportData() {
+    if (!subs.length) { showToast('⚠ No entries to export.'); return; }
+    const payload = { app: 'SpendTracker', version: 2, exported: new Date().toISOString(), entries: subs };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'spendtracker-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✓ Exported ' + subs.length + ' entr' + (subs.length > 1 ? 'ies' : 'y') + '.');
+  }
+
+  /* ── Import ── */
+  function triggerImport() {
+    document.getElementById('importInput').value = '';
+    document.getElementById('importInput').click();
+  }
+
+  function handleImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        let imported = [];
+        if (Array.isArray(data)) {
+          imported = data;
+        } else if (data.entries && Array.isArray(data.entries)) {
+          imported = data.entries;
+        } else if (data.subscriptions && Array.isArray(data.subscriptions)) {
+          imported = data.subscriptions;
+        } else {
+          showToast('⚠ Invalid SpendTracker backup file.'); return;
+        }
+        if (!imported.length) { showToast('⚠ No entries found in file.'); return; }
+        const valid = imported.filter(s => s.name && s.cost !== undefined);
+        valid.forEach(s => { if (!s.id) s.id = uid(); });
+        if (confirm(`Import ${valid.length} entr${valid.length > 1 ? 'ies' : 'y'} into SpendTracker? This will replace your current data.`)) {
+          subs = valid;
+          save(); renderAll();
+          showToast('✓ Imported ' + valid.length + ' entr' + (valid.length > 1 ? 'ies' : 'y') + '.');
+        }
+      } catch {
+        showToast('⚠ Could not parse file. Make sure it is a valid SpendTracker backup.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ── Toast ── */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  /* ── XSS escape ── */
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Close modal on overlay click (mousedown guard prevents spurious closes on window blur) ── */
+  let _mouseDownOnOverlay = false;
+
+  /* Reset flag on any window-level mousedown so clicks starting outside the browser
+     (e.g. clicking back into the window) never accidentally close the modal */
+  window.addEventListener('mousedown', function(e) {
+    const fo = document.getElementById('formOverlay');
+    const del = document.getElementById('deleteOverlay');
+    _mouseDownOnOverlay = (e.target === fo || e.target === del);
+  });
+
+  document.getElementById('formOverlay').addEventListener('mouseup', function(e) {
+    if (_mouseDownOnOverlay && e.target === this) closeModals();
+    _mouseDownOnOverlay = false;
+  });
+  document.getElementById('deleteOverlay').addEventListener('mouseup', function(e) {
+    if (_mouseDownOnOverlay && e.target === this) closeModals();
+    _mouseDownOnOverlay = false;
+  });
+
+  /* ── Onboarding ── */
+  function showOnboarding() {
+    obGoStep(1);
+    document.getElementById('onboardingOverlay').style.display = 'flex';
+  }
+
+  function closeOnboarding() {
+    document.getElementById('onboardingOverlay').style.display = 'none';
+    localStorage.setItem('spendtracker_cat_onboarded', '1');
+  }
+
+  function closeOnboardingAndAdd() {
+    closeOnboarding();
+    setTimeout(() => openAddModal(), 80);
+  }
+
+  function obGoStep(n) {
+    document.querySelectorAll('.onboarding-step').forEach(s => s.classList.remove('active'));
+    const step = document.getElementById('obStep' + n);
+    if (step) step.classList.add('active');
+  }
+
+  /* ── Keyboard ESC ── */
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModals(); });
+
+  /* ── Init ── */
+  load();
+  renderAll();
+  // Show onboarding if app is empty and user hasn't seen it before
+  if (!subs.length && !localStorage.getItem('spendtracker_cat_onboarded')) {
+    setTimeout(() => showOnboarding(), 400);
+  }
+</script>
+
+<div style="
+  position: fixed; bottom: 14px; left: 18px;
+  font-family: var(--font-family);
+  font-size: 10px; font-weight: 500;
+  color: var(--color-text-faint);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  z-index: 10;
+">v2.3.0 · SpendTracker · Cat's Edition</div>
+
+</body>
+</html>
