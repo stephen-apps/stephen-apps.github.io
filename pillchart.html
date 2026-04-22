@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Steve's Pill Chart</title>
+<meta name="version" content="1.1.0">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -677,13 +678,13 @@
   <div class="tabs-card">
 
     <!-- Tab navigation -->
-    <nav class="tabs-nav">
-      <button class="tab-btn active" onclick="switchTab('chart', this)">📋 Weekly Chart</button>
-      <button class="tab-btn"        onclick="switchTab('medicines', this)">💊 Medicines</button>
+    <nav class="tabs-nav" role="tablist" aria-label="App sections">
+      <button class="tab-btn active" role="tab" aria-selected="true"  aria-controls="tab-chart"     id="tabBtn-chart"     onclick="switchTab('chart', this)">📋 Weekly Chart</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="tab-medicines" id="tabBtn-medicines" onclick="switchTab('medicines', this)">💊 Medicines</button>
     </nav>
 
     <!-- ── Weekly Chart Tab ── -->
-    <div class="tab-panel active" id="tab-chart">
+    <div class="tab-panel active" id="tab-chart" role="tabpanel" aria-labelledby="tabBtn-chart">
 
       <!-- Print-only header (invisible on screen) -->
       <div class="print-only">
@@ -718,7 +719,7 @@
     </div><!-- /tab-chart -->
 
     <!-- ── Medicines Tab ── -->
-    <div class="tab-panel" id="tab-medicines">
+    <div class="tab-panel" id="tab-medicines" role="tabpanel" aria-labelledby="tabBtn-medicines">
       <div class="med-toolbar">
         <p class="section-label" style="margin:0;padding:0;border:none;">Medicines List</p>
         <button class="btn-primary" onclick="openForm()">+ Add Medicine</button>
@@ -738,7 +739,7 @@
 </div><!-- /main -->
 
 <!-- ── Add / Edit Medicine Modal ── -->
-<div class="form-overlay" id="formOverlay" style="display:none" onclick="overlayClick(event)">
+<div class="form-overlay" id="formOverlay" style="display:none" onclick="overlayClick(event)" role="dialog" aria-modal="true" aria-labelledby="formTitle">
   <div class="form-modal" onclick="event.stopPropagation()">
     <div class="form-modal-title" id="formTitle">Add Medicine</div>
     <div class="form-grid">
@@ -809,9 +810,9 @@
 </div>
 
 <!-- ── Delete Confirm Modal ── -->
-<div class="confirm-overlay" id="deleteOverlay" style="display:none">
+<div class="confirm-overlay" id="deleteOverlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
   <div class="confirm-modal">
-    <h3>Delete Medicine?</h3>
+    <h3 id="deleteModalTitle">Delete Medicine?</h3>
     <p>Are you sure you want to remove <strong id="deleteTargetName"></strong>? This cannot be undone.</p>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeDelete()">Cancel</button>
@@ -824,6 +825,11 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* ═══════════════════════════════════════════
+   APP VERSION
+═══════════════════════════════════════════ */
+const APP_VERSION = '1.1.0';
+
 /* ═══════════════════════════════════════════
    DATA & STORAGE
 ═══════════════════════════════════════════ */
@@ -862,9 +868,13 @@ function uid() {
    TABS
 ═══════════════════════════════════════════ */
 function switchTab(name, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
   document.getElementById('tab-' + name).classList.add('active');
 }
 
@@ -878,11 +888,12 @@ function renderStats() {
   const am     = medicines.filter(m => m.when === 'am' || m.when === 'ampm').length;
   const pm     = medicines.filter(m => m.when === 'pm' || m.when === 'ampm').length;
   const el = document.getElementById('statPills');
-  if (total === 0) { el.innerHTML = '<span class="stat-pill"><span>0</span> medicines</span>'; return; }
+  if (total === 0) { el.innerHTML = `<span class="stat-pill"><span>0</span> medicines</span><span class="stat-pill">v${APP_VERSION}</span>`; return; }
   el.innerHTML =
     `<span class="stat-pill"><span>${total}</span> medicine${total !== 1 ? 's' : ''}</span>` +
     `<span class="stat-pill"><span>${daily}</span> daily · <span>${weekly}</span> weekly</span>` +
-    `<span class="stat-pill"><span>${am}</span> AM · <span>${pm}</span> PM</span>`;
+    `<span class="stat-pill"><span>${am}</span> AM · <span>${pm}</span> PM</span>` +
+    `<span class="stat-pill">v${APP_VERSION}</span>`;
 }
 
 /* ═══════════════════════════════════════════
@@ -920,8 +931,8 @@ function renderMedList() {
       </div>
       ${whenBadge(m)}
       <div class="med-card-actions">
-        <button class="btn-icon" onclick="openForm('${m.id}')" title="Edit">✏️</button>
-        <button class="btn-icon btn-icon-danger" onclick="openDelete('${m.id}')" title="Delete">🗑️</button>
+        <button class="btn-icon" onclick="openForm('${m.id}')" aria-label="Edit ${esc(m.name)}">✏️</button>
+        <button class="btn-icon btn-icon-danger" onclick="openDelete('${m.id}')" aria-label="Delete ${esc(m.name)}">🗑️</button>
       </div>
     </div>
   `).join('');
@@ -1091,6 +1102,7 @@ function dash() {
    ADD / EDIT FORM
 ═══════════════════════════════════════════ */
 function openForm(id = null) {
+  _formOpener = document.activeElement;
   editingId = id;
   const m = id ? medicines.find(x => x.id === id) : null;
 
@@ -1112,6 +1124,7 @@ function openForm(id = null) {
 function closeForm() {
   document.getElementById('formOverlay').style.display = 'none';
   editingId = null;
+  if (_formOpener) { _formOpener.focus(); _formOpener = null; }
 }
 
 function overlayClick(e) {
@@ -1161,15 +1174,18 @@ function saveMedicine() {
    DELETE
 ═══════════════════════════════════════════ */
 function openDelete(id) {
+  _deleteOpener = document.activeElement;
   deleteId = id;
   const m = medicines.find(x => x.id === id);
   document.getElementById('deleteTargetName').textContent = m ? m.name : 'this medicine';
   document.getElementById('deleteOverlay').style.display = 'flex';
+  setTimeout(() => document.querySelector('#deleteOverlay .btn-cancel').focus(), 60);
 }
 
 function closeDelete() {
   document.getElementById('deleteOverlay').style.display = 'none';
   deleteId = null;
+  if (_deleteOpener) { _deleteOpener.focus(); _deleteOpener = null; }
 }
 
 function confirmDelete() {
@@ -1301,13 +1317,36 @@ function renderAll() {
 }
 
 /* ═══════════════════════════════════════════
-   KEYBOARD: Escape closes modals
+   KEYBOARD: Escape closes modals + focus trap
 ═══════════════════════════════════════════ */
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeForm();
-    closeDelete();
+const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+
+function trapFocus(e, modalEl) {
+  const focusable = Array.from(modalEl.querySelectorAll(FOCUSABLE)).filter(el => !el.closest('[style*="display:none"]') && !el.closest('[style*="display: none"]'));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last  = focusable[focusable.length - 1];
+  if (e.key === 'Tab') {
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+    }
   }
+}
+
+let _formOpener = null;
+let _deleteOpener = null;
+
+document.addEventListener('keydown', e => {
+  const formOpen   = document.getElementById('formOverlay').style.display   !== 'none';
+  const deleteOpen = document.getElementById('deleteOverlay').style.display !== 'none';
+  if (e.key === 'Escape') {
+    if (formOpen)   closeForm();
+    if (deleteOpen) closeDelete();
+  }
+  if (formOpen)   trapFocus(e, document.getElementById('formOverlay'));
+  if (deleteOpen) trapFocus(e, document.getElementById('deleteOverlay'));
 });
 
 /* ═══════════════════════════════════════════
