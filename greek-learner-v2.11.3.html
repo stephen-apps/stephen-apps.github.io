@@ -556,6 +556,44 @@
   }
   .reset-export-btn:hover { background: rgba(201,168,76,0.12); border-color: var(--gold); }
   .reset-backup-btns { display: flex; gap: 8px; margin-top: 9px; flex-wrap: wrap; justify-content: flex-start; }
+  .reset-import-btn {
+    display: inline-block;
+    padding: 5px 14px;
+    background: transparent;
+    border: 1px solid rgba(46,109,164,0.45);
+    border-radius: 20px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--sky);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-import-btn:hover { background: rgba(46,109,164,0.1); border-color: var(--sky); }
+
+  /* Import toast notification */
+  .import-toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: var(--aegean);
+    color: white;
+    border-radius: 20px;
+    padding: 10px 22px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 8px 28px rgba(26,58,92,0.35);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+  }
+  .import-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
   .reset-actions {
     display: flex;
     gap: 10px;
@@ -1213,6 +1251,7 @@
     /* Reset overlay */
     .reset-card { background: #242020; border-color: #3a3530; }
     .reset-warning { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.25); }
+    .import-toast { background: var(--sky); }
   }
 </style>
 </head>
@@ -1228,6 +1267,7 @@
   <header>
     <button class="reset-btn" onclick="openResetConfirm()" aria-label="Reset all progress" title="Reset all progress">Reset</button>
     <button class="help-btn" onclick="openOnboarding()" aria-label="Open starting guide" title="Starting guide">?</button>
+    <input type="file" id="backupFileInput" accept=".json" style="display:none" onchange="importProgress(event)">
     <div class="greek-title" lang="el">Ελληνικά</div>
     <div class="subtitle">Modern Greek — For Travellers</div>
     <div class="version-tag">Version 2.11.3</div>
@@ -1246,6 +1286,9 @@
     </div>
   </div>
 
+  <!-- Import toast (v2.11.1) -->
+  <div class="import-toast" id="importToast" role="status" aria-live="polite"></div>
+
   <!-- Reset confirmation dialog (v2.11) -->
   <div class="reset-overlay" id="resetOverlay" role="dialog" aria-modal="true" aria-labelledby="resetDialogTitle">
     <div id="resetStep1" class="reset-card">
@@ -1256,6 +1299,7 @@
         <br>
         <div class="reset-backup-btns">
           <button class="reset-export-btn" onclick="exportProgress()">↓ Export backup</button>
+          <button class="reset-import-btn" onclick="triggerImport()">↑ Restore backup</button>
         </div>
       </div>
       <div class="reset-actions">
@@ -2615,11 +2659,12 @@ function exportProgress() {
     } catch(e) { /* fall through to clipboard */ }
   }
 
-  // iOS / fallback path: copy JSON to clipboard, show a brief alert.
+  // iOS / fallback path: copy JSON to clipboard
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(json).then(() => {
-      alert('Backup copied to clipboard — paste into a Notes file to save it.');
+      showImportToast('✓ Backup copied to clipboard — paste into a Notes file to save it.', false);
     }).catch(() => {
+      // Clipboard also blocked — last resort: show in prompt
       window.prompt('Copy this backup text and save it somewhere safe:', json);
     });
   } else {
@@ -2628,6 +2673,58 @@ function exportProgress() {
 }
 
 function resetProgress() { openResetConfirm(); } // legacy alias
+
+// ── Backup restore (v2.11.1) ──────────────────────────────────────────────
+function triggerImport() {
+  document.getElementById('backupFileInput').value = '';
+  document.getElementById('backupFileInput').click();
+}
+
+function showImportToast(msg, isError) {
+  const t = document.getElementById('importToast');
+  t.textContent = msg;
+  t.style.background = isError ? 'var(--terracotta)' : '';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function importProgress(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let data;
+    try {
+      data = JSON.parse(e.target.result);
+    } catch(err) {
+      showImportToast('⚠ Could not read file — is it a valid backup?', true);
+      return;
+    }
+    const knownKeys = ['greekLearned','greekPractice','greekFcKnown','greekFcSeen',
+                       'greekFcIndex','greekFcStreak','greekFcBestStreak',
+                       'greekQCorrect','greekQTotal','greekQStreak',
+                       'greekQBestStreak','greekMilestones','greekVoiceName','greekCat'];
+    const hasKnownKey = knownKeys.some(k => Object.prototype.hasOwnProperty.call(data, k));
+    if (!hasKnownKey) {
+      showImportToast('⚠ This doesn\'t look like a Greek Learner backup.', true);
+      return;
+    }
+    let restored = 0;
+    knownKeys.forEach(k => {
+      if (Object.prototype.hasOwnProperty.call(data, k)) {
+        try { localStorage.setItem(k, JSON.stringify(data[k])); restored++; } catch(err) {}
+      }
+    });
+    if (restored === 0) {
+      showImportToast('⚠ Nothing could be restored — storage may be blocked.', true);
+      return;
+    }
+    closeResetConfirm();
+    showImportToast('✓ Backup restored — reloading…', false);
+    setTimeout(() => location.reload(), 1400);
+  };
+  reader.readAsText(file);
+}
 
 // ════════════════════════════════════════════════════
 // CAFÉ
